@@ -12,6 +12,26 @@ function modelGroupKey(m) {
   return m.group ?? m.provider_label ?? m.provider_id ?? "Other";
 }
 
+function loadStringArray(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!Array.isArray(parsed)) return null;
+    return parsed.map((v) => String(v));
+  } catch {
+    return null;
+  }
+}
+
+function saveStringArray(key, arr) {
+  try {
+    localStorage.setItem(key, JSON.stringify(arr));
+  } catch {
+    // ignore
+  }
+}
+
 export default function Page() {
   const [words, setWords] = useState([]);
   const [models, setModels] = useState([]);
@@ -44,8 +64,16 @@ export default function Page() {
         const generatedModels = nextModels.filter((m) => modelIdsWithClips.has(m.id));
         const groups = Array.from(new Set(generatedModels.map(modelGroupKey))).sort((a, b) => a.localeCompare(b));
         const kinds = Array.from(new Set(generatedModels.map((m) => m.input_kind))).sort((a, b) => a.localeCompare(b));
-        setEnabledGroups(new Set());
-        setEnabledKinds(new Set(kinds));
+
+        const storedGroups = loadStringArray("pv_enabledGroups_v1");
+        const storedKinds = loadStringArray("pv_enabledKinds_v1");
+
+        const nextEnabledGroups =
+          storedGroups != null ? storedGroups.filter((g) => groups.includes(g)) : groups.length <= 6 ? groups : [];
+        const nextEnabledKinds = storedKinds != null ? storedKinds.filter((k) => kinds.includes(k)) : kinds;
+
+        setEnabledGroups(new Set(nextEnabledGroups));
+        setEnabledKinds(new Set(nextEnabledKinds));
       } catch (e) {
         setError(e instanceof Error ? e.message : String(e));
       }
@@ -103,6 +131,14 @@ export default function Page() {
 
   const enabledGroupList = useMemo(() => allGroups.filter((g) => enabledGroups.has(g)), [allGroups, enabledGroups]);
   const disabledGroupList = useMemo(() => allGroups.filter((g) => !enabledGroups.has(g)), [allGroups, enabledGroups]);
+
+  useEffect(() => {
+    saveStringArray("pv_enabledGroups_v1", Array.from(enabledGroups));
+  }, [enabledGroups]);
+
+  useEffect(() => {
+    saveStringArray("pv_enabledKinds_v1", Array.from(enabledKinds));
+  }, [enabledKinds]);
 
   function disableGroup(group) {
     setEnabledGroups((prev) => {
