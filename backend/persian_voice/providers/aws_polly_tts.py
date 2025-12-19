@@ -33,9 +33,6 @@ class AWSPollyTTSProvider(Provider):
     def is_available(self) -> tuple[bool, str | None]:
         if not shutil.which("aws"):
             return False, "`aws` CLI not found in PATH"
-        enabled = (os.environ.get("AWS_POLLY_ENABLED") or "").strip().lower() in {"1", "true", "yes", "y", "on"}
-        if not enabled:
-            return False, "AWS_POLLY_ENABLED not set (set to 1 to enable)"
         return True, None
 
     def _voice_ids(self) -> list[str]:

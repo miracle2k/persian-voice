@@ -111,7 +111,6 @@ Hugging Face Inference (provider id `hf_inference`):
 Amazon Polly (provider id `aws_polly`):
 
 - Requires AWS CLI (`aws`) + configured credentials.
-- `AWS_POLLY_ENABLED`: set to `1` to enable (disabled by default to avoid accidental API usage).
 - `AWS_POLLY_VOICE_IDS`: comma-separated voice ids (default `Joanna`).
 - `AWS_POLLY_ENGINE`: optional `standard|neural|generative`.
 - `AWS_POLLY_TEXT_TYPE`: optional `text|ssml`.
