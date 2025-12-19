@@ -13,6 +13,7 @@ from .narakeet_tts import NarakeetTTSProvider
 from .openai_tts import OpenAITTSProvider
 from .resemble_tts import ResembleTTSProvider
 from .speechify_tts import SpeechifyTTSProvider
+from .speechgen_tts import SpeechGenTTSProvider
 from .wellsaid_tts import WellSaidTTSProvider
 
 
@@ -26,6 +27,7 @@ def _known_provider_factories() -> dict[str, type[Provider]]:
         "resemble": ResembleTTSProvider,
         "narakeet": NarakeetTTSProvider,
         "speechify": SpeechifyTTSProvider,
+        "speechgen": SpeechGenTTSProvider,
         "wellsaid": WellSaidTTSProvider,
         "cambai": CambAITTSProvider,
     }

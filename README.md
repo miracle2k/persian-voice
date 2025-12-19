@@ -137,6 +137,19 @@ LOVO (provider id `lovo`):
 - `PERSIAN_VOICE_LOVO_TIMEOUT`: request timeout seconds (default `30`).
 - `PERSIAN_VOICE_LOVO_MAX_RETRIES`: retries (default `2`).
 
+SpeechGen (provider id `speechgen`):
+
+- `SPEECHGEN_TOKEN`: API token from your SpeechGen profile.
+- `SPEECHGEN_EMAIL`: your SpeechGen account email.
+- `SPEECHGEN_VOICES`: comma-separated voice names (optional; otherwise auto-picks from the public `Persian` voice list).
+- `SPEECHGEN_FORMAT`: `mp3` (default) or `wav`.
+- `SPEECHGEN_BASE_URL`: default `https://speechgen.io`.
+- `SPEECHGEN_SPEED`, `SPEECHGEN_PITCH`, `SPEECHGEN_EMOTION`: optional knobs.
+- `PERSIAN_VOICE_SPEECHGEN_TIMEOUT`: request timeout seconds (default `30`).
+- `PERSIAN_VOICE_SPEECHGEN_MAX_RETRIES`: retries (default `2`).
+- `PERSIAN_VOICE_SPEECHGEN_TOTAL_TIMEOUT`: poll timeout seconds (default `60`).
+- `PERSIAN_VOICE_SPEECHGEN_POLL_INTERVAL`: poll interval seconds (default `1`).
+
 WellSaid (provider id `wellsaid`):
 
 - `WELLSAID_API_KEY`: API key (sent as `X-API-KEY`).
