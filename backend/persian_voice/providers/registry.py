@@ -9,6 +9,7 @@ from .aivoov_tts import AiVOOVTTSProvider
 from .cambai_tts import CambAITTSProvider
 from .elevenlabs_tts import ElevenLabsTTSProvider
 from .google_cloud_tts import GoogleCloudTTSProvider
+from .hf_inference_tts import HuggingFaceInferenceTTSProvider
 from .lovo_tts import LovoTTSProvider
 from .narakeet_tts import NarakeetTTSProvider
 from .openai_tts import OpenAITTSProvider
@@ -26,6 +27,7 @@ def _known_provider_factories() -> dict[str, type[Provider]]:
         "elevenlabs": ElevenLabsTTSProvider,
         "lovo": LovoTTSProvider,
         "google_cloud_tts": GoogleCloudTTSProvider,
+        "hf_inference": HuggingFaceInferenceTTSProvider,
         "resemble": ResembleTTSProvider,
         "narakeet": NarakeetTTSProvider,
         "speechify": SpeechifyTTSProvider,

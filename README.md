@@ -100,6 +100,14 @@ Google Cloud Text-to-Speech (provider id `google_cloud_tts`):
 - `PERSIAN_VOICE_GOOGLE_CLOUD_TIMEOUT`: request timeout seconds (default `20`).
 - `PERSIAN_VOICE_GOOGLE_CLOUD_MAX_RETRIES`: retries (default `2`).
 
+Hugging Face Inference (provider id `hf_inference`):
+
+- `HF_TOKEN` (or `HUGGINGFACE_API_TOKEN`): Hugging Face token.
+- `HF_INFERENCE_MODEL_IDS`: comma-separated model ids (default `facebook/mms-tts-fas`).
+- `HF_INFERENCE_WAIT_FOR_MODEL`: default `true`.
+- `PERSIAN_VOICE_HF_TIMEOUT`: request timeout seconds (default `30`).
+- `PERSIAN_VOICE_HF_MAX_RETRIES`: retries (default `2`).
+
 Resemble AI (provider id `resemble`):
 
 - `RESEMBLE_API_KEY`: API key.
