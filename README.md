@@ -117,6 +117,14 @@ Narakeet (provider id `narakeet`):
 - `PERSIAN_VOICE_NARAKEET_TIMEOUT`: request timeout seconds (default `30`).
 - `PERSIAN_VOICE_NARAKEET_MAX_RETRIES`: retries (default `2`).
 
+Speechify (provider id `speechify`):
+
+- `SPEECHIFY_API_KEY`: API key (sent as `Authorization: Bearer ...`).
+- `SPEECHIFY_VOICE_IDS`: comma-separated voice ids (default `cliff`).
+- `SPEECHIFY_BASE_URL`: default `https://api.sws.speechify.com`.
+- `PERSIAN_VOICE_SPEECHIFY_TIMEOUT`: request timeout seconds (default `30`).
+- `PERSIAN_VOICE_SPEECHIFY_MAX_RETRIES`: retries (default `2`).
+
 WellSaid (provider id `wellsaid`):
 
 - `WELLSAID_API_KEY`: API key (sent as `X-API-KEY`).
