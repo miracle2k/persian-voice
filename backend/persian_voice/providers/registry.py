@@ -5,6 +5,7 @@ from typing import Iterable
 
 from .base import Provider
 from .azure_speech import AzureSpeechTTSProvider
+from .aivoov_tts import AiVOOVTTSProvider
 from .cambai_tts import CambAITTSProvider
 from .elevenlabs_tts import ElevenLabsTTSProvider
 from .google_cloud_tts import GoogleCloudTTSProvider
@@ -21,6 +22,7 @@ def _known_provider_factories() -> dict[str, type[Provider]]:
     return {
         "openai": OpenAITTSProvider,
         "azure_speech": AzureSpeechTTSProvider,
+        "aivoov": AiVOOVTTSProvider,
         "elevenlabs": ElevenLabsTTSProvider,
         "lovo": LovoTTSProvider,
         "google_cloud_tts": GoogleCloudTTSProvider,

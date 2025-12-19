@@ -150,6 +150,17 @@ SpeechGen (provider id `speechgen`):
 - `PERSIAN_VOICE_SPEECHGEN_TOTAL_TIMEOUT`: poll timeout seconds (default `60`).
 - `PERSIAN_VOICE_SPEECHGEN_POLL_INTERVAL`: poll interval seconds (default `1`).
 
+AiVOOV (provider id `aivoov`):
+
+- `AIVOOV_API_KEY`: API key (sent as `X-API-KEY`).
+- `AIVOOV_VOICE_IDS`: comma-separated voice ids (optional; otherwise tries to list voices).
+- `AIVOOV_LANGUAGE_CODE`: used when listing voices, default `fa-IR`.
+- `AIVOOV_BASE_URL`: default `https://aivoov.com/api/v8`.
+- `AIVOOV_MAX_VOICES`: when auto-fetching, default `2`.
+- `AIVOOV_PITCH`, `AIVOOV_SPEAKING_RATE`, `AIVOOV_VOLUME`: optional SSML-style knobs (`default` keeps provider defaults).
+- `PERSIAN_VOICE_AIVOOV_TIMEOUT`: request timeout seconds (default `30`).
+- `PERSIAN_VOICE_AIVOOV_MAX_RETRIES`: retries (default `2`).
+
 WellSaid (provider id `wellsaid`):
 
 - `WELLSAID_API_KEY`: API key (sent as `X-API-KEY`).
