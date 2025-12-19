@@ -4,12 +4,14 @@ import os
 from typing import Iterable
 
 from .base import Provider
+from .azure_speech import AzureSpeechTTSProvider
 from .openai_tts import OpenAITTSProvider
 
 
 def _known_provider_factories() -> dict[str, type[Provider]]:
     return {
         "openai": OpenAITTSProvider,
+        "azure_speech": AzureSpeechTTSProvider,
     }
 
 
@@ -32,4 +34,3 @@ def load_providers(provider_ids: str | None = None) -> list[Provider]:
         providers.append(factory())
 
     return providers
-

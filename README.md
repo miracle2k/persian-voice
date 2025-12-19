@@ -36,6 +36,13 @@ export OPENAI_API_KEY=...
 python backend/scripts/render_audio.py
 ```
 
+To run multiple providers:
+
+```bash
+export PERSIAN_VOICE_PROVIDERS=openai,azure_speech
+python backend/scripts/render_audio.py
+```
+
 ### 4) Run the web UI
 
 ```bash
@@ -61,6 +68,17 @@ npm run preview
 - `PERSIAN_VOICE_PROVIDERS`: comma-separated provider ids (default `openai`).
 - `PERSIAN_VOICE_OPENAI_TIMEOUT`: request timeout seconds (default `20`).
 - `PERSIAN_VOICE_OPENAI_MAX_RETRIES`: OpenAI SDK retries (default `2`).
+
+Azure Speech (provider id `azure_speech`):
+
+- `AZURE_SPEECH_KEY`: subscription key.
+- `AZURE_SPEECH_REGION`: Azure region (e.g. `eastus`) or set `AZURE_SPEECH_ENDPOINT`.
+- `AZURE_SPEECH_ENDPOINT`: full REST endpoint (optional).
+- `AZURE_SPEECH_LANG`: default `fa-IR`.
+- `AZURE_SPEECH_VOICES`: default `fa-IR-DilaraNeural,fa-IR-FaridNeural` (comma-separated).
+- `AZURE_SPEECH_OUTPUT_FORMAT`: default `audio-24khz-48kbitrate-mono-mp3`.
+- `PERSIAN_VOICE_AZURE_TIMEOUT`: request timeout seconds (default `20`).
+- `PERSIAN_VOICE_AZURE_MAX_RETRIES`: retries (default `2`).
 
 ## Adding a provider (pattern)
 
