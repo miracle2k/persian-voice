@@ -86,6 +86,7 @@ def main() -> int:
         help="Comma-separated provider ids (default: $PERSIAN_VOICE_PROVIDERS or 'openai').",
     )
     parser.add_argument("--fail-fast", action="store_true", help="Stop at the first synthesis error.")
+    parser.add_argument("--verbose", action="store_true", help="Print per-word skip/regenerate details.")
     args = parser.parse_args()
 
     pub = public_dir()
@@ -98,8 +99,26 @@ def main() -> int:
     providers = load_providers(args.providers)
 
     model_variants: list[ModelVariant] = []
+    model_variants_by_provider: dict[str, list[ModelVariant]] = {}
     for provider in providers:
-        model_variants.extend(list(provider.list_model_variants()))
+        variants = list(provider.list_model_variants())
+        model_variants_by_provider[provider.provider_id] = variants
+        model_variants.extend(variants)
+
+    print(f"Words: {len(words)} ({words_path})")
+    print(f"Providers: {len(providers)} ({', '.join(p.provider_id for p in providers)})")
+    for provider in providers:
+        available, reason = provider.is_available()
+        variants = model_variants_by_provider.get(provider.provider_id, [])
+        available_variants = sum(1 for v in variants if v.available)
+        suffix = ""
+        if not available:
+            suffix = f" — unavailable: {reason or 'unknown reason'}"
+        print(f"  - {provider.provider_id}: {available_variants}/{len(variants)} model-variants{suffix}")
+
+    available_models = sum(1 for m in model_variants if m.available)
+    unavailable_models = len(model_variants) - available_models
+    print(f"Model variants: {len(model_variants)} (available={available_models}, unavailable={unavailable_models})")
 
     write_json_atomic(
         models_path,
@@ -140,10 +159,19 @@ def main() -> int:
 
     for model in model_variants:
         if not model.available:
+            if args.verbose:
+                print(f"[skip] {model.id}: unavailable: {model.unavailable_reason or 'unknown reason'}")
             continue
         provider = provider_by_id.get(model.provider_id)
         if not provider:
+            if args.verbose:
+                print(f"[skip] {model.id}: provider not loaded ({model.provider_id})")
             continue
+
+        model_generated = 0
+        model_skipped = 0
+        model_missing_audio = 0
+        model_failed = 0
 
         provider_seg = safe_path_segment(model.provider_id)
         engine_seg = safe_path_segment(model.engine_id)
@@ -175,19 +203,29 @@ def main() -> int:
                     },
                 )
                 skipped += 1
+                model_skipped += 1
+                if args.verbose:
+                    print(f"[skip] exists (no clip): {audio_rel}")
                 continue
             if existing_clip and audio_abs.exists():
                 skipped += 1
+                model_skipped += 1
+                if args.verbose:
+                    print(f"[skip] exists: {audio_rel}")
                 continue
 
             if not audio_abs.exists() and existing_clip:
                 missing_audio += 1
+                model_missing_audio += 1
+                if args.verbose:
+                    print(f"[warn] missing audio on disk, regenerating: {audio_rel}")
 
             text = text_for_kind(word, model.input_kind)
             try:
                 provider.synthesize(model=model, text=text, out_path=audio_abs)
             except Exception as exc:  # noqa: BLE001
                 failed += 1
+                model_failed += 1
                 failure = {
                     "word_id": word.id,
                     "model_id": model.id,
@@ -220,7 +258,13 @@ def main() -> int:
             )
             updated[key] = clip
             generated += 1
+            model_generated += 1
             print(f"Generated {audio_rel}")
+
+        print(
+            f"[model] {model.id}: generated={model_generated} skipped={model_skipped}"
+            f" missing_audio={model_missing_audio} failed={model_failed}"
+        )
 
     # Persist clips.json
     clips_by_model: dict[str, list[Clip]] = defaultdict(list)
@@ -252,6 +296,7 @@ def main() -> int:
         },
     )
 
+    print(f"Stats: generated={generated} skipped={skipped} missing_audio={missing_audio} failed={failed}")
     print(f"Wrote {models_path}")
     print(f"Wrote {clips_path}")
     return 0
