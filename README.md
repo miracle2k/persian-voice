@@ -125,6 +125,18 @@ Speechify (provider id `speechify`):
 - `PERSIAN_VOICE_SPEECHIFY_TIMEOUT`: request timeout seconds (default `30`).
 - `PERSIAN_VOICE_SPEECHIFY_MAX_RETRIES`: retries (default `2`).
 
+LOVO (provider id `lovo`):
+
+- `LOVO_API_KEY`: API key (sent as `X-API-KEY`).
+- `LOVO_SPEAKER_IDS`: comma-separated speaker ids (optional; otherwise tries to list speakers).
+- `LOVO_LOCALE_FILTER`: when auto-listing speakers, default `fa-IR`.
+- `LOVO_SPEAKER_STYLE_ID`: optional speaker style id.
+- `LOVO_SPEED`: default `1.0`.
+- `LOVO_BASE_URL`: default `https://api.genny.lovo.ai`.
+- `LOVO_MAX_SPEAKERS`: when auto-fetching, default `2`.
+- `PERSIAN_VOICE_LOVO_TIMEOUT`: request timeout seconds (default `30`).
+- `PERSIAN_VOICE_LOVO_MAX_RETRIES`: retries (default `2`).
+
 WellSaid (provider id `wellsaid`):
 
 - `WELLSAID_API_KEY`: API key (sent as `X-API-KEY`).
