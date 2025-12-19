@@ -59,7 +59,7 @@ class OpenAITTSProvider(Provider):
         engine_id = os.environ.get("OPENAI_TTS_MODEL", "gpt-4o-mini-tts").strip()
         voices_raw = os.environ.get("OPENAI_TTS_VOICES", "alloy")
         voices = [v.strip() for v in voices_raw.split(",") if v.strip()]
-        input_kinds: list[TEXT_KIND] = ["fa", "fa_latn", "latn"]
+        input_kinds: list[TEXT_KIND] = ["fa", "fa_diac", "latn"]
 
         available, reason = self.is_available()
         for voice_id in voices:

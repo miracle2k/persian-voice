@@ -69,7 +69,7 @@ class NarakeetTTSProvider(Provider):
         return voices or [None]
 
     def list_model_variants(self) -> Iterable[ModelVariant]:
-        input_kinds: list[TEXT_KIND] = ["fa", "fa_latn", "latn"]
+        input_kinds: list[TEXT_KIND] = ["fa", "fa_diac", "latn"]
         engine_id = "text-to-speech"
 
         available, reason = self.is_available()
@@ -169,4 +169,3 @@ class NarakeetTTSProvider(Provider):
                     tmp_path.unlink()
                 except OSError:
                     pass
-

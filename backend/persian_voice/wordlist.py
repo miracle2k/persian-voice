@@ -11,7 +11,7 @@ def default_words() -> list[Word]:
         Word(id="ketab", fa="کتاب", ar="", fa_diac="کِتاب", latn="ketāb", gloss_en="book", rarity="common"),
         Word(id="derakht", fa="درخت", ar="", fa_diac="دِرَخت", latn="derakht", gloss_en="tree", rarity="common"),
         Word(id="ayene", fa="آینه", ar="", fa_diac="آیِنه", latn="āyene", gloss_en="mirror", rarity="common"),
-        Word(id="kuh", fa="کوه", ar="", fa_diac="کوه", latn="kuh", gloss_en="mountain", rarity="common"),
+        Word(id="kuh", fa="کوه", ar="", fa_diac="کُوه", latn="kuh", gloss_en="mountain", rarity="common"),
         Word(
             id="shegeftangiz",
             fa="شگفت‌انگیز",
@@ -40,4 +40,3 @@ def default_words() -> list[Word]:
         )
         for w in words
     ]
-

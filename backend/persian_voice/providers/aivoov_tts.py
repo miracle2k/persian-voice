@@ -143,7 +143,7 @@ class AiVOOVTTSProvider(Provider):
 
     def list_model_variants(self) -> Iterable[ModelVariant]:
         engine_id = "api/v8/create"
-        input_kinds: list[TEXT_KIND] = ["fa", "fa_latn", "latn"]
+        input_kinds: list[TEXT_KIND] = ["fa", "fa_diac", "latn"]
 
         available, reason = self.is_available()
         voices = self._voices()
@@ -263,4 +263,3 @@ class AiVOOVTTSProvider(Provider):
                     tmp_path.unlink()
                 except OSError:
                     pass
-

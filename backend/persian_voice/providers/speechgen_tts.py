@@ -136,7 +136,7 @@ class SpeechGenTTSProvider(Provider):
 
     def list_model_variants(self) -> Iterable[ModelVariant]:
         engine_id = "api/text"
-        input_kinds: list[TEXT_KIND] = ["fa", "fa_latn", "latn"]
+        input_kinds: list[TEXT_KIND] = ["fa", "fa_diac", "latn"]
         audio_format = self._output_format()
 
         available, reason = self.is_available()
@@ -308,4 +308,3 @@ class SpeechGenTTSProvider(Provider):
                     tmp_path.unlink()
                 except OSError:
                     pass
-

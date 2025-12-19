@@ -71,7 +71,7 @@ class ResembleTTSProvider(Provider):
         return True, None
 
     def list_model_variants(self) -> Iterable[ModelVariant]:
-        input_kinds: list[TEXT_KIND] = ["fa", "fa_latn", "latn"]
+        input_kinds: list[TEXT_KIND] = ["fa", "fa_diac", "latn"]
 
         output_format_raw = (os.environ.get("RESEMBLE_OUTPUT_FORMAT") or "wav").strip().lower() or "wav"
         if output_format_raw not in {"wav", "mp3"}:
@@ -181,4 +181,3 @@ class ResembleTTSProvider(Provider):
                     tmp_path.unlink()
                 except OSError:
                     pass
-

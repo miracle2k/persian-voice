@@ -120,7 +120,7 @@ class GoogleCloudTTSProvider(Provider):
     def list_model_variants(self) -> Iterable[ModelVariant]:
         lang = self._language_code()
         engine_id = f"text-to-speech:v1:{lang}"
-        input_kinds: list[TEXT_KIND] = ["fa", "fa_latn", "latn"]
+        input_kinds: list[TEXT_KIND] = ["fa", "fa_diac", "latn"]
 
         voices = self._voice_names()
         if not voices:
@@ -241,4 +241,3 @@ class GoogleCloudTTSProvider(Provider):
                     tmp_path.unlink()
                 except OSError:
                     pass
-

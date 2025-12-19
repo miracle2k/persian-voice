@@ -79,7 +79,7 @@ class WellSaidTTSProvider(Provider):
         return True, None
 
     def list_model_variants(self) -> Iterable[ModelVariant]:
-        input_kinds: list[TEXT_KIND] = ["fa", "fa_latn", "latn"]
+        input_kinds: list[TEXT_KIND] = ["fa", "fa_diac", "latn"]
         engine_id = (os.environ.get("WELLSAID_MODEL") or "caruso").strip() or "caruso"
 
         available, reason = self.is_available()
@@ -185,4 +185,3 @@ class WellSaidTTSProvider(Provider):
                     tmp_path.unlink()
                 except OSError:
                     pass
-

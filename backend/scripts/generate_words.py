@@ -132,6 +132,13 @@ def main() -> int:
     args = parser.parse_args()
 
     words = _generate_words_llm(count=args.count, model=args.llm_model) if args.llm else default_words()
+    diacritic_re = re.compile(r"[\u064B-\u0652\u0670\u0653-\u065F]")
+    for w in words:
+        if not w.fa_diac or w.fa_diac == w.fa or not diacritic_re.search(w.fa_diac):
+            print(
+                f"[warn] {w.id}: fa_diac missing/undiacriticized (fa={w.fa!r} fa_diac={w.fa_diac!r})",
+                file=sys.stderr,
+            )
     payload = {
         "schema_version": 1,
         "generated_at": datetime.now(timezone.utc).isoformat(),

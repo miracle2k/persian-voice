@@ -72,7 +72,7 @@ class SpeechifyTTSProvider(Provider):
 
     def list_model_variants(self) -> Iterable[ModelVariant]:
         engine_id = "v1/audio/stream"
-        input_kinds: list[TEXT_KIND] = ["fa", "fa_latn", "latn"]
+        input_kinds: list[TEXT_KIND] = ["fa", "fa_diac", "latn"]
 
         available, reason = self.is_available()
         for voice_id in self._voice_ids():
@@ -162,4 +162,3 @@ class SpeechifyTTSProvider(Provider):
                     tmp_path.unlink()
                 except OSError:
                     pass
-

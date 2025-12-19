@@ -82,7 +82,7 @@ class IBMWatsonTTSProvider(Provider):
         return "audio/mp3"
 
     def list_model_variants(self) -> Iterable[ModelVariant]:
-        input_kinds: list[TEXT_KIND] = ["fa", "fa_latn", "latn"]
+        input_kinds: list[TEXT_KIND] = ["fa", "fa_diac", "latn"]
         accept = self._accept_format()
         audio_format = "wav" if accept.endswith("wav") else "mp3"
         engine_id = f"watson:{accept}"
@@ -188,4 +188,3 @@ class IBMWatsonTTSProvider(Provider):
                     tmp_path.unlink()
                 except OSError:
                     pass
-

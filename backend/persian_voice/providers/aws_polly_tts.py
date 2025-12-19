@@ -83,7 +83,7 @@ class AWSPollyTTSProvider(Provider):
         return None
 
     def list_model_variants(self) -> Iterable[ModelVariant]:
-        input_kinds: list[TEXT_KIND] = ["fa", "fa_latn", "latn"]
+        input_kinds: list[TEXT_KIND] = ["fa", "fa_diac", "latn"]
         engine = self._engine()
         engine_id = "polly" + (f":{engine}" if engine else "")
 

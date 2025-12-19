@@ -74,7 +74,7 @@ class AzureSpeechTTSProvider(Provider):
         voices = [v.strip() for v in voices_raw.split(",") if v.strip()]
         lang = os.environ.get("AZURE_SPEECH_LANG", "fa-IR").strip() or "fa-IR"
 
-        input_kinds: list[TEXT_KIND] = ["fa", "fa_latn", "latn"]
+        input_kinds: list[TEXT_KIND] = ["fa", "fa_diac", "latn"]
         available, reason = self.is_available()
         for voice_id in voices:
             engine_id = f"neural:{lang}"
@@ -175,4 +175,3 @@ class AzureSpeechTTSProvider(Provider):
                     pass
 
         raise RuntimeError("Azure Speech TTS failed.") from last_exc
-

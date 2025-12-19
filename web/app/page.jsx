@@ -8,13 +8,19 @@ async function fetchJson(path) {
   return await res.json();
 }
 
+function modelGroupKey(m) {
+  return m.group ?? m.provider_label ?? m.provider_id ?? "Other";
+}
+
 export default function Page() {
   const [words, setWords] = useState([]);
   const [models, setModels] = useState([]);
   const [clips, setClips] = useState([]);
   const [failures, setFailures] = useState([]);
   const [query, setQuery] = useState("");
-  const [visibleModelIds, setVisibleModelIds] = useState(() => new Set());
+  const [enabledGroups, setEnabledGroups] = useState(() => new Set());
+  const [enabledKinds, setEnabledKinds] = useState(() => new Set());
+  const [groupToAdd, setGroupToAdd] = useState("");
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -25,17 +31,28 @@ export default function Page() {
           fetchJson("data/models.json"),
           fetchJson("data/clips.json").catch(() => ({ clips: [] }))
         ]);
-        setWords(wordsJson.words ?? []);
-        setModels(modelsJson.models ?? []);
-        setClips(clipsJson.clips ?? []);
+        const nextWords = wordsJson.words ?? [];
+        const nextModels = modelsJson.models ?? [];
+        const nextClips = clipsJson.clips ?? [];
+
+        setWords(nextWords);
+        setModels(nextModels);
+        setClips(nextClips);
         setFailures(clipsJson.failures ?? []);
-        const defaultVisible = new Set((modelsJson.models ?? []).map((m) => m.id));
-        setVisibleModelIds(defaultVisible);
+
+        const modelIdsWithClips = new Set(nextClips.map((c) => c.model_id));
+        const generatedModels = nextModels.filter((m) => modelIdsWithClips.has(m.id));
+        const groups = Array.from(new Set(generatedModels.map(modelGroupKey))).sort((a, b) => a.localeCompare(b));
+        const kinds = Array.from(new Set(generatedModels.map((m) => m.input_kind))).sort((a, b) => a.localeCompare(b));
+        setEnabledGroups(new Set());
+        setEnabledKinds(new Set(kinds));
       } catch (e) {
         setError(e instanceof Error ? e.message : String(e));
       }
     })();
   }, []);
+
+  const modelIdsWithClips = useMemo(() => new Set(clips.map((c) => c.model_id)), [clips]);
 
   const clipsByKey = useMemo(() => {
     const map = new Map();
@@ -49,6 +66,8 @@ export default function Page() {
     return map;
   }, [failures]);
 
+  const generatedModels = useMemo(() => models.filter((m) => modelIdsWithClips.has(m.id)), [models, modelIdsWithClips]);
+
   const filteredWords = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return words;
@@ -58,24 +77,59 @@ export default function Page() {
     });
   }, [words, query]);
 
-  const visibleModels = useMemo(() => models.filter((m) => visibleModelIds.has(m.id)), [models, visibleModelIds]);
+  const allGroups = useMemo(() => {
+    const groups = Array.from(new Set(generatedModels.map(modelGroupKey)));
+    groups.sort((a, b) => a.localeCompare(b));
+    return groups;
+  }, [generatedModels]);
 
-  const modelGroups = useMemo(() => {
-    const groups = new Map();
-    for (const m of models) {
-      const key = m.group ?? m.provider_label ?? m.provider_id ?? "Other";
-      const arr = groups.get(key) ?? [];
-      arr.push(m);
-      groups.set(key, arr);
-    }
-    return Array.from(groups.entries()).map(([group, list]) => [group, list.sort((a, b) => a.label.localeCompare(b.label))]);
-  }, [models]);
+  const allKinds = useMemo(() => {
+    const kinds = Array.from(new Set(generatedModels.map((m) => m.input_kind)));
+    kinds.sort((a, b) => a.localeCompare(b));
+    return kinds;
+  }, [generatedModels]);
 
-  function toggleModel(id) {
-    setVisibleModelIds((prev) => {
+  const visibleModels = useMemo(() => {
+    return generatedModels
+      .filter((m) => enabledGroups.has(modelGroupKey(m)))
+      .filter((m) => enabledKinds.has(m.input_kind))
+      .sort((a, b) => {
+        const ga = modelGroupKey(a);
+        const gb = modelGroupKey(b);
+        if (ga !== gb) return ga.localeCompare(gb);
+        return String(a.input_kind).localeCompare(String(b.input_kind));
+      });
+  }, [generatedModels, enabledGroups, enabledKinds]);
+
+  const enabledGroupList = useMemo(() => allGroups.filter((g) => enabledGroups.has(g)), [allGroups, enabledGroups]);
+  const disabledGroupList = useMemo(() => allGroups.filter((g) => !enabledGroups.has(g)), [allGroups, enabledGroups]);
+
+  function disableGroup(group) {
+    setEnabledGroups((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      next.delete(group);
+      return next;
+    });
+  }
+
+  function enableGroup(group) {
+    if (!group || !allGroups.includes(group)) return;
+    setEnabledGroups((prev) => new Set(prev).add(group));
+  }
+
+  function enableAllGroups() {
+    setEnabledGroups(new Set(allGroups));
+  }
+
+  function disableAllGroups() {
+    setEnabledGroups(new Set());
+  }
+
+  function toggleKind(kind) {
+    setEnabledKinds((prev) => {
+      const next = new Set(prev);
+      if (next.has(kind)) next.delete(kind);
+      else next.add(kind);
       return next;
     });
   }
@@ -96,7 +150,7 @@ export default function Page() {
         <div>
           <h1 className="title">Persian Voice Comparison</h1>
           <p className="subtitle">
-            {words.length} words · {models.length} model-variants · {clips.length} clips
+            {words.length} words · {generatedModels.length} generated model-variants · {clips.length} clips
           </p>
         </div>
       </div>
@@ -109,19 +163,67 @@ export default function Page() {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-          <span className="subtitle">Columns:</span>
+          <span className="subtitle">Enabled models: {enabledGroupList.length}</span>
+          <button className="button" type="button" onClick={enableAllGroups} disabled={enabledGroupList.length === allGroups.length}>
+            Enable all
+          </button>
+          <button className="button" type="button" onClick={disableAllGroups} disabled={enabledGroupList.length === 0}>
+            Disable all
+          </button>
+        </div>
+        <div className="row" style={{ marginTop: 10 }}>
+          <span className="subtitle">Text variants:</span>
+          {allKinds.map((kind) => (
+            <label key={kind} className="kindToggle">
+              <input type="checkbox" checked={enabledKinds.has(kind)} onChange={() => toggleKind(kind)} />
+              <span>{kind}</span>
+            </label>
+          ))}
+        </div>
+        <div className="row" style={{ marginTop: 10 }}>
+          <span className="subtitle">Enable model:</span>
+          <input
+            className="input"
+            style={{ minWidth: 360 }}
+            list="group-options"
+            placeholder={disabledGroupList.length ? "Start typing a model name…" : "No disabled models"}
+            value={groupToAdd}
+            onChange={(e) => setGroupToAdd(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                enableGroup(groupToAdd.trim());
+                setGroupToAdd("");
+              }
+            }}
+            disabled={!disabledGroupList.length}
+          />
+          <datalist id="group-options">
+            {disabledGroupList.map((g) => (
+              <option key={g} value={g} />
+            ))}
+          </datalist>
+          <button
+            className="button"
+            type="button"
+            disabled={!disabledGroupList.length || !groupToAdd.trim()}
+            onClick={() => {
+              enableGroup(groupToAdd.trim());
+              setGroupToAdd("");
+            }}
+          >
+            Add
+          </button>
         </div>
         <div className="chips" style={{ marginTop: 10 }}>
-          {modelGroups.map(([group, groupModels]) => (
+          {enabledGroupList.length === 0 ? (
+            <div className="missing">No models enabled. Use “Enable model” above to add one.</div>
+          ) : null}
+          {enabledGroupList.map((group) => (
             <div key={group} className="chip" title={group}>
-              <span style={{ fontWeight: 600 }}>{group}</span>
-              <span style={{ color: "var(--muted)" }}>·</span>
-              {groupModels.map((m) => (
-                <label key={m.id} style={{ display: "inline-flex", gap: 6, alignItems: "center" }}>
-                  <input type="checkbox" checked={visibleModelIds.has(m.id)} onChange={() => toggleModel(m.id)} />
-                  <span style={{ whiteSpace: "nowrap" }}>{m.input_kind}</span>
-                </label>
-              ))}
+              <span className="chipLabel">{group}</span>
+              <button className="chipRemove" type="button" onClick={() => disableGroup(group)} aria-label={`Disable ${group}`}>
+                ×
+              </button>
             </div>
           ))}
         </div>
@@ -138,7 +240,6 @@ export default function Page() {
                   <div>{m.engine_id}</div>
                   <div>{m.voice_id}</div>
                   <div style={{ color: "var(--accent)" }}>{m.input_kind}</div>
-                  {!m.available ? <div className="missing">{m.unavailable_reason ?? "Unavailable"}</div> : null}
                 </th>
               ))}
             </tr>

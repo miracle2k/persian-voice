@@ -130,7 +130,7 @@ class ElevenLabsTTSProvider(Provider):
 
     def list_model_variants(self) -> Iterable[ModelVariant]:
         engine_id = (os.environ.get("ELEVENLABS_MODEL_ID") or "eleven_multilingual_v2").strip() or "eleven_multilingual_v2"
-        input_kinds: list[TEXT_KIND] = ["fa", "fa_latn", "latn"]
+        input_kinds: list[TEXT_KIND] = ["fa", "fa_diac", "latn"]
 
         available, reason = self.is_available()
         for voice_id, voice_name in self._voices():
@@ -241,4 +241,3 @@ class ElevenLabsTTSProvider(Provider):
                     tmp_path.unlink()
                 except OSError:
                     pass
-

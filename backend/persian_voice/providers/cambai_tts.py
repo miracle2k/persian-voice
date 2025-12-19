@@ -126,7 +126,7 @@ class CambAITTSProvider(Provider):
         return self._voice_cache
 
     def list_model_variants(self) -> Iterable[ModelVariant]:
-        input_kinds: list[TEXT_KIND] = ["fa", "fa_latn", "latn"]
+        input_kinds: list[TEXT_KIND] = ["fa", "fa_diac", "latn"]
         engine_id = "tts"
         available, reason = self.is_available()
 
