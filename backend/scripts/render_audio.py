@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from persian_voice.providers.registry import load_providers
 from persian_voice.schema import Clip, ModelVariant, Word
+from persian_voice.env import load_dotenv
 from persian_voice.storage import public_dir, read_json, write_json_atomic
 from persian_voice.text import text_for_kind
 
@@ -76,6 +77,7 @@ def short_error_message(exc: BaseException, *, limit: int = 240) -> str:
 
 
 def main() -> int:
+    load_dotenv()
     parser = argparse.ArgumentParser(description="Render missing audio clips for all configured providers (idempotent).")
     parser.add_argument("--words", default="data/words.json", help="Words JSON path relative to public dir.")
     parser.add_argument("--models", default="data/models.json", help="Models JSON path relative to public dir.")

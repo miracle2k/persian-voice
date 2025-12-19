@@ -12,6 +12,10 @@ source .venv/bin/activate
 pip install -r backend/requirements.txt
 ```
 
+### 1.5) (Optional) Put secrets in `.env`
+
+Create a local `.env` (ignored by git) using `.env.example` as a template.
+
 ### 2) Generate (or reset) the word list
 
 Writes `web/public/data/words.json`.

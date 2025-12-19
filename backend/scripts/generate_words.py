@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from openai import OpenAI
 
+from persian_voice.env import load_dotenv
 from persian_voice.storage import public_dir, write_json_atomic
 from persian_voice.text import persian_to_arabic_chars
 from persian_voice.schema import Word
@@ -119,6 +120,7 @@ Requirements:
 
 
 def main() -> int:
+    load_dotenv()
     parser = argparse.ArgumentParser(description="Generate the baseline Persian word list (words.json).")
     parser.add_argument(
         "--out",
