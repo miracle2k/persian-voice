@@ -108,6 +108,24 @@ Hugging Face Inference (provider id `hf_inference`):
 - `PERSIAN_VOICE_HF_TIMEOUT`: request timeout seconds (default `30`).
 - `PERSIAN_VOICE_HF_MAX_RETRIES`: retries (default `2`).
 
+Amazon Polly (provider id `aws_polly`):
+
+- Requires AWS CLI (`aws`) + configured credentials.
+- `AWS_POLLY_ENABLED`: set to `1` to enable (disabled by default to avoid accidental API usage).
+- `AWS_POLLY_VOICE_IDS`: comma-separated voice ids (default `Joanna`).
+- `AWS_POLLY_ENGINE`: optional `standard|neural|generative`.
+- `AWS_POLLY_TEXT_TYPE`: optional `text|ssml`.
+- Uses `AWS_REGION` / `AWS_DEFAULT_REGION` if set.
+
+IBM Watson TTS (provider id `ibm_watson`):
+
+- `IBM_WATSON_TTS_API_KEY`: API key.
+- `IBM_WATSON_TTS_URL`: service URL (base; e.g. `https://.../instances/<id>`).
+- `IBM_WATSON_TTS_VOICES`: comma-separated voice ids (default `en-US_AllisonV3Voice`).
+- `IBM_WATSON_TTS_ACCEPT`: `audio/mp3` (default) or `audio/wav`.
+- `PERSIAN_VOICE_IBM_TIMEOUT`: request timeout seconds (default `30`).
+- `PERSIAN_VOICE_IBM_MAX_RETRIES`: retries (default `2`).
+
 Resemble AI (provider id `resemble`):
 
 - `RESEMBLE_API_KEY`: API key.

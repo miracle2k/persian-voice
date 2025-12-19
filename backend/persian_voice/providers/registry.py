@@ -6,10 +6,12 @@ from typing import Iterable
 from .base import Provider
 from .azure_speech import AzureSpeechTTSProvider
 from .aivoov_tts import AiVOOVTTSProvider
+from .aws_polly_tts import AWSPollyTTSProvider
 from .cambai_tts import CambAITTSProvider
 from .elevenlabs_tts import ElevenLabsTTSProvider
 from .google_cloud_tts import GoogleCloudTTSProvider
 from .hf_inference_tts import HuggingFaceInferenceTTSProvider
+from .ibm_watson_tts import IBMWatsonTTSProvider
 from .lovo_tts import LovoTTSProvider
 from .narakeet_tts import NarakeetTTSProvider
 from .openai_tts import OpenAITTSProvider
@@ -28,6 +30,8 @@ def _known_provider_factories() -> dict[str, type[Provider]]:
         "lovo": LovoTTSProvider,
         "google_cloud_tts": GoogleCloudTTSProvider,
         "hf_inference": HuggingFaceInferenceTTSProvider,
+        "aws_polly": AWSPollyTTSProvider,
+        "ibm_watson": IBMWatsonTTSProvider,
         "resemble": ResembleTTSProvider,
         "narakeet": NarakeetTTSProvider,
         "speechify": SpeechifyTTSProvider,
