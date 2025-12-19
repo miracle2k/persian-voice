@@ -106,7 +106,7 @@ class HuggingFaceInferenceTTSProvider(Provider):
         if not token:
             raise RuntimeError("HF_TOKEN (or HUGGINGFACE_API_TOKEN) not set")
 
-        base = "https://api-inference.huggingface.co/models"
+        base = (os.environ.get("HF_INFERENCE_BASE_URL") or "https://router.huggingface.co/hf-inference/models").rstrip("/")
         params = {"wait_for_model": "true"} if self._wait_for_model else {}
         url = f"{base}/{urllib.parse.quote(model.engine_id, safe='')}"
         if params:

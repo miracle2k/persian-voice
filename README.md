@@ -104,7 +104,9 @@ Hugging Face Inference (provider id `hf_inference`):
 
 - `HF_TOKEN` (or `HUGGINGFACE_API_TOKEN`): Hugging Face token.
 - `HF_INFERENCE_MODEL_IDS`: comma-separated model ids (default `facebook/mms-tts-fas`).
+- Example including OuteTTS 1.0 1B: `HF_INFERENCE_MODEL_IDS=facebook/mms-tts-fas,OuteAI/Llama-OuteTTS-1.0-1B`
 - `HF_INFERENCE_WAIT_FOR_MODEL`: default `true`.
+- `HF_INFERENCE_BASE_URL`: optional override (default `https://router.huggingface.co/hf-inference/models`).
 - `PERSIAN_VOICE_HF_TIMEOUT`: request timeout seconds (default `30`).
 - `PERSIAN_VOICE_HF_MAX_RETRIES`: retries (default `2`).
 
