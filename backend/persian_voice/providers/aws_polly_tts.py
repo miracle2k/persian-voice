@@ -30,9 +30,40 @@ class AWSPollyTTSProvider(Provider):
     def provider_label(self) -> str:
         return "Amazon Polly"
 
+    def _enabled(self) -> bool:
+        return (os.environ.get("AWS_POLLY_ENABLED") or "").strip().lower() in {"1", "true", "yes", "y", "on"}
+
+    def _region(self) -> str:
+        env_region = (
+            os.environ.get("AWS_POLLY_REGION")
+            or os.environ.get("AWS_REGION")
+            or os.environ.get("AWS_DEFAULT_REGION")
+            or ""
+        ).strip()
+        if env_region:
+            return env_region
+
+        try:
+            proc = subprocess.run(
+                ["aws", "configure", "get", "region"],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+            configured = (proc.stdout or "").strip()
+            if configured:
+                return configured
+        except Exception:
+            pass
+
+        # Default region to avoid AWS CLI hard-failing with "You must specify a region".
+        return "us-east-1"
+
     def is_available(self) -> tuple[bool, str | None]:
         if not shutil.which("aws"):
             return False, "`aws` CLI not found in PATH"
+        if not self._enabled():
+            return False, "AWS_POLLY_ENABLED not set (set to 1 to enable)"
         return True, None
 
     def _voice_ids(self) -> list[str]:
@@ -78,12 +109,14 @@ class AWSPollyTTSProvider(Provider):
     def synthesize(self, *, model: ModelVariant, text: str, out_path: Path) -> dict:
         if not shutil.which("aws"):
             raise RuntimeError("`aws` CLI not found in PATH")
+        if not self._enabled():
+            raise RuntimeError("AWS_POLLY_ENABLED not set (set to 1 to enable)")
         if not model.voice_id:
             raise RuntimeError("AWS Polly requires a voice_id")
 
         engine = self._engine()
         text_type = self._text_type()
-        region = (os.environ.get("AWS_REGION") or os.environ.get("AWS_DEFAULT_REGION") or "").strip() or None
+        region = self._region()
 
         out_path.parent.mkdir(parents=True, exist_ok=True)
         tmp_path = out_path.with_suffix(out_path.suffix + ".tmp")
@@ -102,8 +135,7 @@ class AWSPollyTTSProvider(Provider):
             text,
             str(tmp_path),
         ]
-        if region:
-            cmd.extend(["--region", region])
+        cmd.extend(["--region", region])
         if engine:
             cmd.extend(["--engine", engine])
         if text_type:
