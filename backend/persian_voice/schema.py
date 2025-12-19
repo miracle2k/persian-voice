@@ -5,7 +5,7 @@ from typing import Any, Literal, TypedDict
 
 
 SchemaVersion = Literal[1]
-TEXT_KIND = Literal["fa", "fa_latn", "fa_diac", "latn", "ar"]
+TEXT_KIND = Literal["fa", "fa_diac", "latn", "ar"]
 
 
 @dataclass(frozen=True, slots=True)

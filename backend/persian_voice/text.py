@@ -22,7 +22,4 @@ def text_for_kind(word: Word, kind: TEXT_KIND) -> str:
         return word.fa_diac or word.fa
     if kind == "latn":
         return word.latn
-    if kind == "fa_latn":
-        return f"{word.fa} ({word.latn})"
     raise ValueError(f"Unknown text kind: {kind}")
-
