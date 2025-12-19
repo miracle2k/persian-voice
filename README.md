@@ -111,6 +111,7 @@ Hugging Face Inference (provider id `hf_inference`):
 - `HF_INFERENCE_MODEL_IDS`: optional override (comma-separated) if you want to test a different set.
 - `HF_INFERENCE_WAIT_FOR_MODEL`: default `true`.
 - `HF_INFERENCE_BASE_URL`: optional override (default `https://router.huggingface.co/hf-inference/models`).
+- Note: the serverless endpoint returns 404 for models it can’t serve; those models will be marked unavailable and skipped.
 - `PERSIAN_VOICE_HF_TIMEOUT`: request timeout seconds (default `30`).
 - `PERSIAN_VOICE_HF_MAX_RETRIES`: retries (default `2`).
 

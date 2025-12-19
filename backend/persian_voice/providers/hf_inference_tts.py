@@ -57,6 +57,7 @@ class HuggingFaceInferenceTTSProvider(Provider):
         self._timeout_s = _env_float("PERSIAN_VOICE_HF_TIMEOUT", 30.0)
         self._max_retries = _env_int("PERSIAN_VOICE_HF_MAX_RETRIES", 2)
         self._wait_for_model = _env_bool("HF_INFERENCE_WAIT_FOR_MODEL", True)
+        self._model_live_cache: dict[str, tuple[bool, str | None]] = {}
 
     @property
     def provider_id(self) -> str:
@@ -87,6 +88,55 @@ class HuggingFaceInferenceTTSProvider(Provider):
             "OuteAI/Llama-OuteTTS-1.0-1B",
         ]
 
+    def _base_url(self) -> str:
+        return (os.environ.get("HF_INFERENCE_BASE_URL") or "https://router.huggingface.co/hf-inference/models").rstrip(
+            "/"
+        )
+
+    def _check_model_live(self, model_id: str) -> tuple[bool, str | None]:
+        """
+        HF Inference "proxy" returns 200 Ok for models it can serve, and 404 for
+        models that aren't deployed/available for serverless inference.
+        """
+
+        cached = self._model_live_cache.get(model_id)
+        if cached is not None:
+            return cached
+
+        token = self._token()
+        if not token:
+            out = (False, "HF_TOKEN (or HUGGINGFACE_API_TOKEN) not set")
+            self._model_live_cache[model_id] = out
+            return out
+
+        # Keep slashes in repo ids; URL-encode everything else.
+        url = f"{self._base_url()}/{urllib.parse.quote(model_id, safe='/')}"
+        req = urllib.request.Request(
+            url,
+            headers={"Authorization": f"Bearer {token}", "User-Agent": "persian-voice/hf-inference-tts"},
+            method="GET",
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=self._timeout_s) as resp:
+                resp.read(2)  # drain a tiny body ("Ok")
+            out = (True, None)
+        except urllib.error.HTTPError as exc:
+            if exc.code == 404:
+                out = (
+                    False,
+                    "Model not available on Hugging Face serverless inference (404). "
+                    "Use a different provider or deploy/run it yourself.",
+                )
+            elif exc.code in {401, 403}:
+                out = (False, f"Hugging Face auth rejected the token (HTTP {exc.code}).")
+            else:
+                out = (False, f"Hugging Face preflight failed (HTTP {exc.code}).")
+        except Exception as exc:  # noqa: BLE001
+            out = (False, f"Hugging Face preflight failed: {type(exc).__name__}: {exc}")
+
+        self._model_live_cache[model_id] = out
+        return out
+
     def _model_ids(self) -> list[str]:
         # Optional override for experimentation; the repo has a curated default list.
         raw = (os.environ.get("HF_INFERENCE_MODEL_IDS") or "").strip()
@@ -96,9 +146,13 @@ class HuggingFaceInferenceTTSProvider(Provider):
 
     def list_model_variants(self) -> Iterable[ModelVariant]:
         input_kinds: list[TEXT_KIND] = ["fa", "fa_diac", "latn"]
-        available, reason = self.is_available()
+        provider_available, provider_reason = self.is_available()
 
         for hf_model_id in self._model_ids():
+            model_available = provider_available
+            model_reason = provider_reason
+            if model_available:
+                model_available, model_reason = self._check_model_live(hf_model_id)
             engine_id = hf_model_id
             group = f"{self.provider_label} · {hf_model_id}"
             for input_kind in input_kinds:
@@ -113,8 +167,8 @@ class HuggingFaceInferenceTTSProvider(Provider):
                     label=f"{group} — {input_kind}",
                     group=group,
                     audio_format="wav",
-                    available=available,
-                    unavailable_reason=reason,
+                    available=model_available,
+                    unavailable_reason=model_reason,
                 )
 
     def synthesize(self, *, model: ModelVariant, text: str, out_path: Path) -> dict:
@@ -122,9 +176,10 @@ class HuggingFaceInferenceTTSProvider(Provider):
         if not token:
             raise RuntimeError("HF_TOKEN (or HUGGINGFACE_API_TOKEN) not set")
 
-        base = (os.environ.get("HF_INFERENCE_BASE_URL") or "https://router.huggingface.co/hf-inference/models").rstrip("/")
+        base = self._base_url()
         params = {"wait_for_model": "true"} if self._wait_for_model else {}
-        url = f"{base}/{urllib.parse.quote(model.engine_id, safe='')}"
+        # Keep slashes in repo ids; URL-encode everything else.
+        url = f"{base}/{urllib.parse.quote(model.engine_id, safe='/')}"
         if params:
             url += "?" + urllib.parse.urlencode(params)
 
