@@ -74,9 +74,25 @@ class HuggingFaceInferenceTTSProvider(Provider):
             return False, "HF_TOKEN (or HUGGINGFACE_API_TOKEN) not set"
         return True, None
 
+    def _default_model_ids(self) -> list[str]:
+        # Curated set of Persian-capable open(-ish) weights that we want to keep
+        # permanently visible in the comparison project (no env var needed).
+        #
+        # Note: some models may not be enabled on Hugging Face Inference for your
+        # account/plan; failures will be recorded in clips.json.
+        return [
+            # Meta MMS TTS Persian checkpoint
+            "facebook/mms-tts-fas",
+            # OuteTTS 1.0 (1B) claims Persian support
+            "OuteAI/Llama-OuteTTS-1.0-1B",
+        ]
+
     def _model_ids(self) -> list[str]:
-        raw = (os.environ.get("HF_INFERENCE_MODEL_IDS") or "facebook/mms-tts-fas").strip()
-        return [m.strip() for m in raw.split(",") if m.strip()]
+        # Optional override for experimentation; the repo has a curated default list.
+        raw = (os.environ.get("HF_INFERENCE_MODEL_IDS") or "").strip()
+        if raw:
+            return [m.strip() for m in raw.split(",") if m.strip()]
+        return self._default_model_ids()
 
     def list_model_variants(self) -> Iterable[ModelVariant]:
         input_kinds: list[TEXT_KIND] = ["fa", "fa_diac", "latn"]
