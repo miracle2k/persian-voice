@@ -39,7 +39,7 @@ python backend/scripts/render_audio.py
 To run multiple providers:
 
 ```bash
-export PERSIAN_VOICE_PROVIDERS=openai,azure_speech
+export PERSIAN_VOICE_PROVIDERS=openai,azure_speech,elevenlabs,google_cloud_tts
 python backend/scripts/render_audio.py
 ```
 
@@ -79,6 +79,63 @@ Azure Speech (provider id `azure_speech`):
 - `AZURE_SPEECH_OUTPUT_FORMAT`: default `audio-24khz-48kbitrate-mono-mp3`.
 - `PERSIAN_VOICE_AZURE_TIMEOUT`: request timeout seconds (default `20`).
 - `PERSIAN_VOICE_AZURE_MAX_RETRIES`: retries (default `2`).
+
+ElevenLabs (provider id `elevenlabs`):
+
+- `ELEVENLABS_API_KEY` (or `XI_API_KEY`): API key.
+- `ELEVENLABS_MODEL_ID`: default `eleven_multilingual_v2`.
+- `ELEVENLABS_VOICE_IDS`: comma-separated voice ids (optional; otherwise tries to fetch voices).
+- `ELEVENLABS_OUTPUT_FORMAT`: default `mp3_44100_128`.
+- `ELEVENLABS_MAX_VOICES`: when auto-fetching, default `2`.
+- `PERSIAN_VOICE_ELEVENLABS_TIMEOUT`: request timeout seconds (default `20`).
+- `PERSIAN_VOICE_ELEVENLABS_MAX_RETRIES`: retries (default `2`).
+
+Google Cloud Text-to-Speech (provider id `google_cloud_tts`):
+
+- `GOOGLE_CLOUD_TTS_API_KEY` (or `GOOGLE_API_KEY`): API key.
+- `GOOGLE_CLOUD_TTS_LANGUAGE_CODE`: default `fa-IR`.
+- `GOOGLE_CLOUD_TTS_VOICE_NAMES`: comma-separated voice names (optional; otherwise tries to list voices).
+- `GOOGLE_CLOUD_TTS_MAX_VOICES`: when auto-fetching, default `2`.
+- `GOOGLE_CLOUD_TTS_SPEAKING_RATE`, `GOOGLE_CLOUD_TTS_PITCH`, `GOOGLE_CLOUD_TTS_SAMPLE_RATE_HZ`: optional audio config knobs.
+- `PERSIAN_VOICE_GOOGLE_CLOUD_TIMEOUT`: request timeout seconds (default `20`).
+- `PERSIAN_VOICE_GOOGLE_CLOUD_MAX_RETRIES`: retries (default `2`).
+
+Resemble AI (provider id `resemble`):
+
+- `RESEMBLE_API_KEY`: API key.
+- `RESEMBLE_VOICE_UUIDS`: comma-separated `voice_uuid` values.
+- `RESEMBLE_OUTPUT_FORMAT`: `wav` (default) or `mp3`.
+- `RESEMBLE_SAMPLE_RATE`: default `48000`.
+- `PERSIAN_VOICE_RESEMBLE_TIMEOUT`: request timeout seconds (default `30`).
+- `PERSIAN_VOICE_RESEMBLE_MAX_RETRIES`: retries (default `2`).
+
+Narakeet (provider id `narakeet`):
+
+- `NARAKEET_API_KEY`: API key.
+- `NARAKEET_VOICES`: comma-separated voice names (optional; uses provider default if unset).
+- `NARAKEET_VOICE_SPEED`, `NARAKEET_VOICE_VOLUME`: optional query params.
+- `PERSIAN_VOICE_NARAKEET_TIMEOUT`: request timeout seconds (default `30`).
+- `PERSIAN_VOICE_NARAKEET_MAX_RETRIES`: retries (default `2`).
+
+WellSaid (provider id `wellsaid`):
+
+- `WELLSAID_API_KEY`: API key (sent as `X-API-KEY`).
+- `WELLSAID_SPEAKER_IDS`: comma-separated integer speaker ids.
+- `WELLSAID_MODEL`: default `caruso`.
+- `WELLSAID_SAMPLE_RATE`: default `44100`.
+- `PERSIAN_VOICE_WELLSAID_TIMEOUT`: request timeout seconds (default `30`).
+- `PERSIAN_VOICE_WELLSAID_MAX_RETRIES`: retries (default `2`).
+
+CAMB.AI (provider id `cambai`):
+
+- `CAMB_API_KEY`: API key.
+- `CAMB_VOICE_IDS`: comma-separated integer voice ids.
+- `CAMB_LANGUAGE_ID`: optional override (otherwise inferred from voice list when possible; defaults to `1`).
+- `CAMB_MAX_VOICES`: when auto-fetching, default `2`.
+- `PERSIAN_VOICE_CAMB_TIMEOUT`: per-request timeout seconds (default `30`).
+- `PERSIAN_VOICE_CAMB_TOTAL_TIMEOUT`: total poll timeout seconds (default `120`).
+- `PERSIAN_VOICE_CAMB_POLL_INTERVAL`: poll interval seconds (default `1`).
+- Note: CAMB currently saves raw bytes as `flac`.
 
 ## Adding a provider (pattern)
 

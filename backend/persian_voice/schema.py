@@ -29,7 +29,7 @@ class ModelVariant:
     input_kind: TEXT_KIND
     label: str
     group: str
-    audio_format: Literal["mp3", "wav"] = "mp3"
+    audio_format: Literal["mp3", "wav", "flac"] = "mp3"
     available: bool = True
     unavailable_reason: str | None = None
 
@@ -49,4 +49,3 @@ class Clip:
     audio_path: str
     created_at: str
     meta: dict[str, Any]
-

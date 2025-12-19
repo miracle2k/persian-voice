@@ -5,13 +5,25 @@ from typing import Iterable
 
 from .base import Provider
 from .azure_speech import AzureSpeechTTSProvider
+from .cambai_tts import CambAITTSProvider
+from .elevenlabs_tts import ElevenLabsTTSProvider
+from .google_cloud_tts import GoogleCloudTTSProvider
+from .narakeet_tts import NarakeetTTSProvider
 from .openai_tts import OpenAITTSProvider
+from .resemble_tts import ResembleTTSProvider
+from .wellsaid_tts import WellSaidTTSProvider
 
 
 def _known_provider_factories() -> dict[str, type[Provider]]:
     return {
         "openai": OpenAITTSProvider,
         "azure_speech": AzureSpeechTTSProvider,
+        "elevenlabs": ElevenLabsTTSProvider,
+        "google_cloud_tts": GoogleCloudTTSProvider,
+        "resemble": ResembleTTSProvider,
+        "narakeet": NarakeetTTSProvider,
+        "wellsaid": WellSaidTTSProvider,
+        "cambai": CambAITTSProvider,
     }
 
 
