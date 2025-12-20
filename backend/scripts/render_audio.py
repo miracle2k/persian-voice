@@ -85,7 +85,7 @@ def main() -> int:
     parser.add_argument(
         "--providers",
         default=None,
-        help="Comma-separated provider ids (default: $PERSIAN_VOICE_PROVIDERS or 'openai').",
+        help="Comma-separated provider ids (default: $PERSIAN_VOICE_PROVIDERS or 'all').",
     )
     parser.add_argument("--fail-fast", action="store_true", help="Stop at the first synthesis error.")
     parser.add_argument("--verbose", action="store_true", help="Print per-word skip/regenerate details.")

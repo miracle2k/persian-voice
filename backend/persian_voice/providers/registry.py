@@ -10,11 +10,12 @@ from .aws_polly_tts import AWSPollyTTSProvider
 from .cambai_tts import CambAITTSProvider
 from .elevenlabs_tts import ElevenLabsTTSProvider
 from .google_cloud_tts import GoogleCloudTTSProvider
-from .hf_inference_tts import HuggingFaceInferenceTTSProvider
 from .ibm_watson_tts import IBMWatsonTTSProvider
 from .lovo_tts import LovoTTSProvider
+from .mms_tts import MMSTTSProvider
 from .narakeet_tts import NarakeetTTSProvider
 from .openai_tts import OpenAITTSProvider
+from .outetts_tts import OuteTTSTTSProvider
 from .resemble_tts import ResembleTTSProvider
 from .speechify_tts import SpeechifyTTSProvider
 from .speechgen_tts import SpeechGenTTSProvider
@@ -29,7 +30,8 @@ def _known_provider_factories() -> dict[str, type[Provider]]:
         "elevenlabs": ElevenLabsTTSProvider,
         "lovo": LovoTTSProvider,
         "google_cloud_tts": GoogleCloudTTSProvider,
-        "hf_inference": HuggingFaceInferenceTTSProvider,
+        "mms": MMSTTSProvider,
+        "outetts": OuteTTSTTSProvider,
         "aws_polly": AWSPollyTTSProvider,
         "ibm_watson": IBMWatsonTTSProvider,
         "resemble": ResembleTTSProvider,
@@ -44,10 +46,10 @@ def _known_provider_factories() -> dict[str, type[Provider]]:
 def load_providers(provider_ids: str | None = None) -> list[Provider]:
     factories = _known_provider_factories()
 
-    raw = provider_ids or os.environ.get("PERSIAN_VOICE_PROVIDERS") or "openai"
+    raw = provider_ids or os.environ.get("PERSIAN_VOICE_PROVIDERS") or "all"
     ids = [p.strip() for p in raw.split(",") if p.strip()]
     if not ids:
-        ids = ["openai"]
+        ids = ["all"]
 
     providers: list[Provider] = []
     for pid in ids:

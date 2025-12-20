@@ -12,6 +12,12 @@ source .venv/bin/activate
 pip install -r backend/requirements.txt
 ```
 
+Optional: install local/open-weight model dependencies (large):
+
+```bash
+pip install -r backend/requirements-local-models.txt
+```
+
 ### 1.5) (Optional) Put secrets in `.env`
 
 Create a local `.env` (ignored by git) using `.env.example` as a template.
@@ -37,7 +43,7 @@ Writes audio to `web/public/audio/...` and updates `web/public/data/models.json`
 
 ```bash
 export OPENAI_API_KEY=...
-python backend/scripts/render_audio.py
+python backend/scripts/render_audio.py --providers openai
 ```
 
 To run multiple providers:
@@ -69,7 +75,7 @@ npm run preview
 - `OPENAI_TTS_MODEL`: default `gpt-4o-mini-tts`.
 - `OPENAI_TTS_VOICES`: default `alloy` (comma-separated).
 - `PERSIAN_VOICE_PUBLIC_DIR`: where to write `data/` + `audio/` (default `web/public`).
-- `PERSIAN_VOICE_PROVIDERS`: comma-separated provider ids (default `openai`).
+- `PERSIAN_VOICE_PROVIDERS`: comma-separated provider ids (default `all`).
 - `PERSIAN_VOICE_OPENAI_TIMEOUT`: request timeout seconds (default `20`).
 - `PERSIAN_VOICE_OPENAI_MAX_RETRIES`: OpenAI SDK retries (default `2`).
 
@@ -104,16 +110,22 @@ Google Cloud Text-to-Speech (provider id `google_cloud_tts`):
 - `PERSIAN_VOICE_GOOGLE_CLOUD_TIMEOUT`: request timeout seconds (default `20`).
 - `PERSIAN_VOICE_GOOGLE_CLOUD_MAX_RETRIES`: retries (default `2`).
 
-Hugging Face Inference (provider id `hf_inference`):
+Local open-weight models (disabled by default):
 
-- `HF_TOKEN` (or `HUGGINGFACE_API_TOKEN`): Hugging Face token.
-- Default models are hardcoded (currently `facebook/mms-tts-fas` and `OuteAI/Llama-OuteTTS-1.0-1B`).
-- `HF_INFERENCE_MODEL_IDS`: optional override (comma-separated) if you want to test a different set.
-- `HF_INFERENCE_WAIT_FOR_MODEL`: default `true`.
-- `HF_INFERENCE_BASE_URL`: optional override (default `https://router.huggingface.co/hf-inference/models`).
-- Note: the serverless endpoint returns 404 for models it can’t serve; those models will be marked unavailable and skipped.
-- `PERSIAN_VOICE_HF_TIMEOUT`: request timeout seconds (default `30`).
-- `PERSIAN_VOICE_HF_MAX_RETRIES`: retries (default `2`).
+- `HF_TOKEN` (or `HUGGINGFACE_API_TOKEN`): optional Hugging Face token for faster downloads / gated models.
+
+Meta MMS TTS (provider id `mms`):
+
+- `MMS_TTS_ENABLED`: set to `1` to enable (downloads the `facebook/mms-tts-fas` weights on first run).
+- `MMS_TTS_DEVICE`: optional torch device (e.g. `cpu`, `cuda`, `mps`).
+
+OuteTTS (provider id `outetts`):
+
+- `OUTETTS_ENABLED`: set to `1` to enable (downloads the `OuteAI/Llama-OuteTTS-1.0-1B` weights on first run).
+- `OUTETTS_SPEAKERS`: comma-separated default speaker ids (default `EN-FEMALE-1-NEUTRAL`).
+- `OUTETTS_BACKEND`: `hf` (default) or `llamacpp`.
+- `OUTETTS_LLAMACPP_QUANTIZATION`: e.g. `FP16` (only used when `OUTETTS_BACKEND=llamacpp`).
+- `OUTETTS_TEMPERATURE`: default `0.4`.
 
 Amazon Polly (provider id `aws_polly`):
 
