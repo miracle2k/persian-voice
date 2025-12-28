@@ -8,6 +8,7 @@ from .azure_speech import AzureSpeechTTSProvider
 from .aivoov_tts import AiVOOVTTSProvider
 from .aws_polly_tts import AWSPollyTTSProvider
 from .cambai_tts import CambAITTSProvider
+from .edge_tts import EdgeTTSProvider
 from .elevenlabs_tts import ElevenLabsTTSProvider
 from .google_cloud_tts import GoogleCloudTTSProvider
 from .ibm_watson_tts import IBMWatsonTTSProvider
@@ -28,6 +29,7 @@ def _known_provider_factories() -> dict[str, type[Provider]]:
         "openai": OpenAITTSProvider,
         "azure_speech": AzureSpeechTTSProvider,
         "aivoov": AiVOOVTTSProvider,
+        "edge_tts": EdgeTTSProvider,
         "elevenlabs": ElevenLabsTTSProvider,
         "lovo": LovoTTSProvider,
         "google_cloud_tts": GoogleCloudTTSProvider,
