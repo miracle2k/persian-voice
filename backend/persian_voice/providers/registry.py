@@ -16,6 +16,7 @@ from .mms_tts import MMSTTSProvider
 from .narakeet_tts import NarakeetTTSProvider
 from .openai_tts import OpenAITTSProvider
 from .outetts_tts import OuteTTSTTSProvider
+from .piper_tts import PiperTTSProvider
 from .resemble_tts import ResembleTTSProvider
 from .speechify_tts import SpeechifyTTSProvider
 from .speechgen_tts import SpeechGenTTSProvider
@@ -32,6 +33,7 @@ def _known_provider_factories() -> dict[str, type[Provider]]:
         "google_cloud_tts": GoogleCloudTTSProvider,
         "mms": MMSTTSProvider,
         "outetts": OuteTTSTTSProvider,
+        "piper": PiperTTSProvider,
         "aws_polly": AWSPollyTTSProvider,
         "ibm_watson": IBMWatsonTTSProvider,
         "resemble": ResembleTTSProvider,

@@ -2,9 +2,11 @@
 #
 # - `mms` provider: `torch`, `transformers`
 # - `outetts` provider: `outetts` (brings in `transformers` + llama.cpp bindings)
+# - `piper` provider: `piper-tts` (ONNX-based, fast local TTS)
 #
 # Keep this separate from `backend/requirements.txt` to avoid accidental installs.
 
 torch
 transformers>=4.40.0
 outetts>=0.4.0
+piper-tts
