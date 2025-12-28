@@ -58,7 +58,9 @@ def load_providers(provider_ids: str | None = None) -> list[Provider]:
             continue
         factory = factories.get(pid)
         if not factory:
-            raise ValueError(f"Unknown provider id: {pid}. Known: {', '.join(sorted(factories.keys()))}")
+            raise ValueError(
+                f"Unknown provider id: {pid}. Known: {', '.join(sorted(factories.keys()))}"
+            )
         providers.append(factory())
 
     return providers
