@@ -1,5 +1,6 @@
 # Optional deps for local/open-weight TTS providers (can be large).
 #
+# - `chatterbox` provider: `chatterbox-tts` (Persian fine-tuned, ~3.2GB model download)
 # - `mms` provider: `torch`, `transformers`
 # - `outetts` provider: `outetts` (brings in `transformers` + llama.cpp bindings)
 # - `piper` provider: `piper-tts` (ONNX-based, fast local TTS)
@@ -7,6 +8,9 @@
 # Keep this separate from `backend/requirements.txt` to avoid accidental installs.
 
 torch
+torchaudio
 transformers>=4.40.0
+safetensors
+chatterbox-tts
 outetts>=0.4.0
 piper-tts
