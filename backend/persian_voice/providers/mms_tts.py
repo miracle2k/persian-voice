@@ -27,6 +27,17 @@ class MMSTTSProvider(Provider):
 
     Model:
       - facebook/mms-tts-fas
+
+    Known Issues:
+      The MMS Persian model produces poor quality output - spoken words often sound
+      completely different from the input text (e.g., "سلام" sounds like "vam").
+      We verified this is NOT a HuggingFace implementation bug: the original fairseq
+      inference produces identical output when using the same random seed. The issue
+      appears to be with the facebook/mms-tts-fas model weights themselves.
+
+    TODO: Investigate further by testing a non-Persian MMS model (e.g., German
+      mms-tts-deu) to determine if this is a Persian-specific training issue or
+      a broader problem with MMS TTS models.
     """
 
     _MODEL_ID = "facebook/mms-tts-fas"
