@@ -13,6 +13,7 @@ from .elevenlabs_tts import ElevenLabsTTSProvider
 from .google_cloud_tts import GoogleCloudTTSProvider
 from .ibm_watson_tts import IBMWatsonTTSProvider
 from .lovo_tts import LovoTTSProvider
+from .manatts_tts import ManaTTSProvider
 from .mms_tts import MMSTTSProvider
 from .narakeet_tts import NarakeetTTSProvider
 from .openai_tts import OpenAITTSProvider
@@ -33,6 +34,7 @@ def _known_provider_factories() -> dict[str, type[Provider]]:
         "elevenlabs": ElevenLabsTTSProvider,
         "lovo": LovoTTSProvider,
         "google_cloud_tts": GoogleCloudTTSProvider,
+        "manatts": ManaTTSProvider,
         "mms": MMSTTSProvider,
         "outetts": OuteTTSTTSProvider,
         "piper": PiperTTSProvider,
