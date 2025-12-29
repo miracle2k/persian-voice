@@ -76,6 +76,10 @@ export default function Page() {
   const [syncStatus, setSyncStatus] = useState("disconnected"); // "disconnected" | "connected" | "error"
   const tursoClientRef = useRef(null);
 
+  // Hide broken models filter
+  const [hideBrokenModels, setHideBrokenModels] = useState(true);
+  const [sessionMarkedBroken, setSessionMarkedBroken] = useState(() => new Set());
+
   // Auto-play state
   const [autoPlayModelId, setAutoPlayModelId] = useState(null);
   const [autoPlayIndex, setAutoPlayIndex] = useState(0);
@@ -188,16 +192,38 @@ export default function Page() {
     return generatedModels
       .filter((m) => enabledGroups.has(modelGroupKey(m)))
       .filter((m) => enabledKinds.has(m.input_kind))
+      .filter((m) => {
+        // If hideBrokenModels is off, show all
+        if (!hideBrokenModels) return true;
+        // If model is not broken, show it
+        if (modelRatings[m.id] !== "broken") return true;
+        // If model was marked broken in this session, still show it (grace period)
+        if (sessionMarkedBroken.has(m.id)) return true;
+        // Otherwise hide it
+        return false;
+      })
       .sort((a, b) => {
         const ga = modelGroupKey(a);
         const gb = modelGroupKey(b);
         if (ga !== gb) return ga.localeCompare(gb);
         return String(a.input_kind).localeCompare(String(b.input_kind));
       });
-  }, [generatedModels, enabledGroups, enabledKinds]);
+  }, [generatedModels, enabledGroups, enabledKinds, hideBrokenModels, modelRatings, sessionMarkedBroken]);
 
   const enabledGroupList = useMemo(() => allGroups.filter((g) => enabledGroups.has(g)), [allGroups, enabledGroups]);
   const disabledGroupList = useMemo(() => allGroups.filter((g) => !enabledGroups.has(g)), [allGroups, enabledGroups]);
+
+  // Compute which groups have ALL their variants marked as broken
+  const fullyBrokenGroups = useMemo(() => {
+    const brokenGroups = new Set();
+    for (const group of allGroups) {
+      const modelsInGroup = generatedModels.filter((m) => modelGroupKey(m) === group);
+      if (modelsInGroup.length > 0 && modelsInGroup.every((m) => modelRatings[m.id] === "broken")) {
+        brokenGroups.add(group);
+      }
+    }
+    return brokenGroups;
+  }, [allGroups, generatedModels, modelRatings]);
 
   useEffect(() => {
     saveStringArray("pv_enabledGroups_v1", Array.from(enabledGroups));
@@ -257,6 +283,11 @@ export default function Page() {
 
     const currentRating = modelRatings[modelId];
     const newRating = currentRating === rating ? null : rating;
+
+    // Track if being marked as broken in this session (for grace period)
+    if (newRating === "broken") {
+      setSessionMarkedBroken((prev) => new Set(prev).add(modelId));
+    }
 
     // Optimistic update
     setModelRatings((prev) => {
@@ -447,6 +478,15 @@ export default function Page() {
               <span>{kind}</span>
             </label>
           ))}
+          <span style={{ marginLeft: "auto" }} />
+          <label className="kindToggle">
+            <input
+              type="checkbox"
+              checked={hideBrokenModels}
+              onChange={() => setHideBrokenModels((prev) => !prev)}
+            />
+            <span>Hide broken</span>
+          </label>
         </div>
         <div className="row" style={{ marginTop: 10 }}>
           <span className="subtitle">Enable model:</span>
@@ -467,7 +507,9 @@ export default function Page() {
           />
           <datalist id="group-options">
             {disabledGroupList.map((g) => (
-              <option key={g} value={g} />
+              <option key={g} value={g}>
+                {fullyBrokenGroups.has(g) ? `${g} (all broken)` : g}
+              </option>
             ))}
           </datalist>
           <button
@@ -487,7 +529,11 @@ export default function Page() {
             <div className="missing">No models enabled. Use “Enable model” above to add one.</div>
           ) : null}
           {enabledGroupList.map((group) => (
-            <div key={group} className="chip" title={group}>
+            <div
+              key={group}
+              className={`chip ${fullyBrokenGroups.has(group) ? "chipBroken" : ""}`}
+              title={fullyBrokenGroups.has(group) ? `${group} (all variants broken)` : group}
+            >
               <span className="chipLabel">{group}</span>
               <button className="chipRemove" type="button" onClick={() => disableGroup(group)} aria-label={`Disable ${group}`}>
                 ×
