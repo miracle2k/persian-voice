@@ -123,10 +123,14 @@ class GoogleCloudTTSProvider(Provider):
         input_kinds: list[TEXT_KIND] = ["fa", "fa_diac", "latn"]
 
         voices = self._voice_names()
-        if not voices:
-            voices = [""]  # Let Google pick the default for the language.
-
         available, reason = self.is_available()
+
+        # If no voices available for this language, mark as unavailable
+        if not voices:
+            available = False
+            reason = f"No voices available for {lang} (Persian not supported by Google Cloud TTS)"
+            voices = [None]  # Yield placeholder to show provider exists but is unavailable
+
         for voice_name in voices:
             voice_label = voice_name or "default"
             group = f"{self.provider_label} · {lang} · {voice_label}"

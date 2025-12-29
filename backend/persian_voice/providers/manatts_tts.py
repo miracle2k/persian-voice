@@ -94,7 +94,8 @@ class ManaTTSProvider(Provider):
         return True, None
 
     def list_model_variants(self) -> Iterable[ModelVariant]:
-        input_kinds: list[TEXT_KIND] = ["fa", "fa_diac", "latn"]
+        # ManaTTS only supports Persian script (trained on Persian text only)
+        input_kinds: list[TEXT_KIND] = ["fa", "fa_diac"]
         available, reason = self.is_available()
 
         voice_id = self._DEFAULT_VOICE
