@@ -42,15 +42,18 @@ class ElevenLabsTTSProvider(Provider):
       - https://elevenlabs.io/docs/api-reference/text-to-speech
     """
 
-    _DEFAULT_VOICES: list[tuple[str, str]] = [
-        ("21m00Tcm4TlvDq8ikWAM", "Rachel"),
-        ("EXAVITQu4vr4xnSDxMaL", "Bella"),
+    # Models and their recommended voices
+    # v3: Use neutral premade voices for best cross-language stability
+    # v2: Use premade voices optimized for multilingual
+    _MODELS: list[tuple[str, str, str, str]] = [
+        # (model_id, model_label, voice_id, voice_name)
+        ("eleven_multilingual_v2", "Multilingual v2", "EXAVITQu4vr4xnSDxMaL", "Sarah"),
+        ("eleven_v3", "v3", "SAz9YHcvj6GT2YYXdXww", "River"),  # Neutral voice, best for v3
     ]
 
     def __init__(self) -> None:
         self._timeout_s = _env_float("PERSIAN_VOICE_ELEVENLABS_TIMEOUT", 20.0)
         self._max_retries = _env_int("PERSIAN_VOICE_ELEVENLABS_MAX_RETRIES", 2)
-        self._cached_voices: list[tuple[str, str]] | None = None
 
     @property
     def provider_id(self) -> str:
@@ -71,77 +74,19 @@ class ElevenLabsTTSProvider(Provider):
     def _base_url(self) -> str:
         return (os.environ.get("ELEVENLABS_BASE_URL") or "https://api.elevenlabs.io").rstrip("/")
 
-    def _env_voice_ids(self) -> list[str]:
-        raw = (os.environ.get("ELEVENLABS_VOICE_IDS") or "").strip()
-        if not raw:
-            return []
-        return [v.strip() for v in raw.split(",") if v.strip()]
-
-    def _fetch_voices(self) -> list[tuple[str, str]]:
-        key = self._api_key()
-        if not key:
-            return []
-
-        max_voices = _env_int("ELEVENLABS_MAX_VOICES", 2)
-        url = f"{self._base_url()}/v1/voices"
-        req = urllib.request.Request(url, headers={"xi-api-key": key, "Accept": "application/json"})
-        with urllib.request.urlopen(req, timeout=self._timeout_s) as resp:
-            data = json.loads(resp.read().decode("utf-8"))
-        voices = data.get("voices") if isinstance(data, dict) else None
-        if not isinstance(voices, list):
-            return []
-
-        out: list[tuple[str, str]] = []
-        for v in voices:
-            if not isinstance(v, dict):
-                continue
-            vid = str(v.get("voice_id") or "").strip()
-            if not vid:
-                continue
-            name = str(v.get("name") or vid).strip() or vid
-            out.append((vid, name))
-
-        out.sort(key=lambda t: t[1].lower())
-        if max_voices > 0:
-            out = out[:max_voices]
-        return out
-
-    def _voices(self) -> list[tuple[str, str]]:
-        if self._cached_voices is not None:
-            return self._cached_voices
-
-        env_ids = self._env_voice_ids()
-        if env_ids:
-            self._cached_voices = [(vid, vid) for vid in env_ids]
-            return self._cached_voices
-
-        available, _ = self.is_available()
-        if available:
-            try:
-                fetched = self._fetch_voices()
-                if fetched:
-                    self._cached_voices = fetched
-                    return self._cached_voices
-            except Exception:
-                pass
-
-        self._cached_voices = list(self._DEFAULT_VOICES)
-        return self._cached_voices
-
     def list_model_variants(self) -> Iterable[ModelVariant]:
-        engine_id = (os.environ.get("ELEVENLABS_MODEL_ID") or "eleven_multilingual_v2").strip() or "eleven_multilingual_v2"
         input_kinds: list[TEXT_KIND] = ["fa", "fa_diac", "latn"]
 
         available, reason = self.is_available()
-        for voice_id, voice_name in self._voices():
-            group = f"{self.provider_label} · {engine_id} · {voice_name}"
+        for model_id, model_label, voice_id, voice_name in self._MODELS:
+            group = f"{self.provider_label} · {model_label} · {voice_name}"
             for input_kind in input_kinds:
-                model_id = f"{self.provider_id}/{engine_id}/{voice_id}/{input_kind}"
+                variant_id = f"{self.provider_id}/{model_id}/{voice_id}/{input_kind}"
                 yield ModelVariant(
-                    id=model_id,
+                    id=variant_id,
                     provider_id=self.provider_id,
                     provider_label=self.provider_label,
-                    engine_id=engine_id,
+                    engine_id=model_id,
                     voice_id=voice_id,
                     input_kind=input_kind,
                     label=f"{group} — {input_kind}",

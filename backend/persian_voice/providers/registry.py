@@ -5,24 +5,19 @@ from typing import Iterable
 
 from .base import Provider
 from .azure_speech import AzureSpeechTTSProvider
-from .aivoov_tts import AiVOOVTTSProvider
 from .aws_polly_tts import AWSPollyTTSProvider
 from .cambai_tts import CambAITTSProvider
 from .chatterbox_tts import ChatterboxTTSProvider
 from .edge_tts import EdgeTTSProvider
 from .elevenlabs_tts import ElevenLabsTTSProvider
 from .google_cloud_tts import GoogleCloudTTSProvider
-from .ibm_watson_tts import IBMWatsonTTSProvider
 from .lovo_tts import LovoTTSProvider
 from .manatts_tts import ManaTTSProvider
 from .mms_tts import MMSTTSProvider
-from .narakeet_tts import NarakeetTTSProvider
 from .openai_tts import OpenAITTSProvider
 from .outetts_tts import OuteTTSTTSProvider
 from .piper_tts import PiperTTSProvider
 from .resemble_tts import ResembleTTSProvider
-from .speechify_tts import SpeechifyTTSProvider
-from .speechgen_tts import SpeechGenTTSProvider
 from .wellsaid_tts import WellSaidTTSProvider
 
 
@@ -30,7 +25,6 @@ def _known_provider_factories() -> dict[str, type[Provider]]:
     return {
         "openai": OpenAITTSProvider,
         "azure_speech": AzureSpeechTTSProvider,
-        "aivoov": AiVOOVTTSProvider,
         "cambai": CambAITTSProvider,
         "chatterbox": ChatterboxTTSProvider,
         "edge_tts": EdgeTTSProvider,
@@ -42,11 +36,7 @@ def _known_provider_factories() -> dict[str, type[Provider]]:
         "outetts": OuteTTSTTSProvider,
         "piper": PiperTTSProvider,
         "aws_polly": AWSPollyTTSProvider,
-        "ibm_watson": IBMWatsonTTSProvider,
         "resemble": ResembleTTSProvider,
-        "narakeet": NarakeetTTSProvider,
-        "speechify": SpeechifyTTSProvider,
-        "speechgen": SpeechGenTTSProvider,
         "wellsaid": WellSaidTTSProvider,
     }
 
