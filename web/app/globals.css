@@ -285,3 +285,22 @@ td:not(.missing):hover {
   cursor: pointer;
   box-shadow: inset 0 0 0 2px var(--accent);
 }
+
+/* Sync status badge */
+.syncBadge {
+  margin-left: 12px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.syncBadge.connected {
+  background: #dcfce7;
+  color: #166534;
+}
+
+.syncBadge.error {
+  background: #fee2e2;
+  color: #991b1b;
+}

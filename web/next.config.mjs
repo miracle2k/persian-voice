@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Note: Removed "output: export" to enable API routes for Turso database
+  output: "export",
   trailingSlash: true,
   images: { unoptimized: true }
 };

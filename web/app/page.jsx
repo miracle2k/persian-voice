@@ -1,6 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { createClient } from "@libsql/client/web";
+import { useEffect, useMemo, useRef, useState } from "react";
+
+// Create Turso client for browser-side access
+function getTursoClient() {
+  const url = process.env.NEXT_PUBLIC_TURSO_DATABASE_URL;
+  const authToken = process.env.NEXT_PUBLIC_TURSO_AUTH_TOKEN;
+  if (!url || !authToken) return null;
+  return createClient({ url, authToken });
+}
 
 async function fetchJson(path) {
   const res = await fetch(path, { cache: "no-store" });
@@ -43,10 +52,14 @@ export default function Page() {
   const [groupToAdd, setGroupToAdd] = useState("");
   const [error, setError] = useState(null);
 
-  // Rating state
+  // Rating state - only enabled after confirmed sync with Turso
   const [modelRatings, setModelRatings] = useState({});
   const [cellIssues, setCellIssues] = useState(new Set());
-  const [ratingsEnabled, setRatingsEnabled] = useState(true);
+  const [syncStatus, setSyncStatus] = useState("disconnected"); // "disconnected" | "connected" | "error"
+  const tursoClientRef = useRef(null);
+
+  // Only enable ratings when we have confirmed database connection
+  const ratingsEnabled = syncStatus === "connected";
 
   useEffect(() => {
     (async () => {
@@ -80,21 +93,28 @@ export default function Page() {
         setEnabledGroups(new Set(nextEnabledGroups));
         setEnabledKinds(new Set(nextEnabledKinds));
 
-        // Load ratings from API
-        if (process.env.NEXT_PUBLIC_RATINGS_ENABLED !== "false") {
+        // Load ratings from Turso (client-side) - only enable if sync confirmed
+        const client = getTursoClient();
+        if (client) {
           try {
-            const ratingsRes = await fetch("/api/ratings");
-            if (ratingsRes.ok) {
-              const data = await ratingsRes.json();
-              setModelRatings(data.modelRatings || {});
-              setCellIssues(new Set(data.cellIssues || []));
+            const [ratingsResult, issuesResult] = await Promise.all([
+              client.execute("SELECT model_id, rating FROM model_ratings"),
+              client.execute("SELECT id FROM cell_issues")
+            ]);
+            const ratings = {};
+            for (const row of ratingsResult.rows) {
+              ratings[row.model_id] = row.rating;
             }
+            const issues = issuesResult.rows.map((row) => row.id);
+            setModelRatings(ratings);
+            setCellIssues(new Set(issues));
+            tursoClientRef.current = client;
+            setSyncStatus("connected");
+            console.log("Turso sync connected:", ratingsResult.rows.length, "ratings,", issues.length, "issues");
           } catch (err) {
-            console.warn("Ratings unavailable:", err);
-            setRatingsEnabled(false);
+            console.warn("Turso sync failed:", err);
+            setSyncStatus("error");
           }
-        } else {
-          setRatingsEnabled(false);
         }
       } catch (e) {
         setError(e instanceof Error ? e.message : String(e));
@@ -207,6 +227,9 @@ export default function Page() {
   }
 
   async function handleModelRating(modelId, rating) {
+    const client = tursoClientRef.current;
+    if (!client) return;
+
     const currentRating = modelRatings[modelId];
     const newRating = currentRating === rating ? null : rating;
 
@@ -218,13 +241,21 @@ export default function Page() {
       return next;
     });
 
-    // Background sync
+    // Background sync to Turso
     try {
-      await fetch("/api/ratings/model", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ modelId, rating: newRating })
-      });
+      if (newRating === null) {
+        await client.execute({
+          sql: "DELETE FROM model_ratings WHERE model_id = ?",
+          args: [modelId]
+        });
+      } else {
+        await client.execute({
+          sql: `INSERT INTO model_ratings (model_id, rating, updated_at)
+                VALUES (?, ?, datetime('now'))
+                ON CONFLICT(model_id) DO UPDATE SET rating = excluded.rating, updated_at = datetime('now')`,
+          args: [modelId, newRating]
+        });
+      }
     } catch (err) {
       console.error("Failed to save rating:", err);
       // Revert on error
@@ -238,6 +269,9 @@ export default function Page() {
   }
 
   async function handleCellIssue(wordId, modelId) {
+    const client = tursoClientRef.current;
+    if (!client) return;
+
     const cellKey = `${wordId}||${modelId}`;
     const hasIssue = cellIssues.has(cellKey);
 
@@ -249,13 +283,21 @@ export default function Page() {
       return next;
     });
 
-    // Background sync
+    // Background sync to Turso
     try {
-      await fetch("/api/ratings/cell", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cellId: cellKey, hasIssue: !hasIssue })
-      });
+      if (hasIssue) {
+        await client.execute({
+          sql: "DELETE FROM cell_issues WHERE id = ?",
+          args: [cellKey]
+        });
+      } else {
+        await client.execute({
+          sql: `INSERT INTO cell_issues (id, word_id, model_id, updated_at)
+                VALUES (?, ?, ?, datetime('now'))
+                ON CONFLICT(id) DO NOTHING`,
+          args: [cellKey, wordId, modelId]
+        });
+      }
     } catch (err) {
       console.error("Failed to save cell issue:", err);
       // Revert on error
@@ -285,6 +327,8 @@ export default function Page() {
           <h1 className="title">Persian Voice Comparison</h1>
           <p className="subtitle">
             {words.length} words · {generatedModels.length} generated model-variants · {clips.length} clips
+            {syncStatus === "connected" && <span className="syncBadge connected" title="Ratings synced to cloud">● Sync</span>}
+            {syncStatus === "error" && <span className="syncBadge error" title="Sync failed - ratings disabled">● Sync error</span>}
           </p>
         </div>
       </div>
