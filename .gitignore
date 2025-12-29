@@ -27,5 +27,4 @@ pnpm-debug.log*
 web/public/audio/
 web/public/data/
 
-# Dependency lockfiles (generated)
-web/package-lock.json
+# Dependency lockfiles - package-lock.json is tracked for CI reproducibility
