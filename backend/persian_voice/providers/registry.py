@@ -17,7 +17,6 @@ from .mms_tts import MMSTTSProvider
 from .openai_tts import OpenAITTSProvider
 from .outetts_tts import OuteTTSTTSProvider
 from .piper_tts import PiperTTSProvider
-from .resemble_tts import ResembleTTSProvider
 from .wellsaid_tts import WellSaidTTSProvider
 
 
@@ -36,7 +35,6 @@ def _known_provider_factories() -> dict[str, type[Provider]]:
         "outetts": OuteTTSTTSProvider,
         "piper": PiperTTSProvider,
         "aws_polly": AWSPollyTTSProvider,
-        "resemble": ResembleTTSProvider,
         "wellsaid": WellSaidTTSProvider,
     }
 
