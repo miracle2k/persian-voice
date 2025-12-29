@@ -197,6 +197,8 @@ class CambAITTSProvider(Provider):
         except ValueError as exc:
             raise RuntimeError("CAMB voice_id must be an integer") from exc
 
+        # Determine language ID based on input_kind or environment override
+        # Persian (fa-ir) = 70, English (en-us) = 1
         language_id_raw = (os.environ.get("CAMB_LANGUAGE_ID") or "").strip()
         language_id: int | None = None
         if language_id_raw:
@@ -205,11 +207,14 @@ class CambAITTSProvider(Provider):
             except ValueError:
                 language_id = None
         if language_id is None:
-            meta = self._voices().get(voice_id)
-            maybe_lang = meta.get("language_id") if isinstance(meta, dict) else None
-            language_id = int(maybe_lang) if isinstance(maybe_lang, int) else None
-        if language_id is None:
-            language_id = 1
+            # Use Persian language ID for Persian text input kinds
+            if model.input_kind in ("fa", "fa_diac"):
+                language_id = 70  # Persian (Iran)
+            elif model.input_kind == "latn":
+                # Latin transliteration - use Persian since it's Persian words
+                language_id = 70
+            else:
+                language_id = 1  # Default to English
 
         base = self._base_url()
 
