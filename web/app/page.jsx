@@ -151,10 +151,14 @@ export default function Page() {
   function enableGroup(group) {
     if (!group || !allGroups.includes(group)) return;
     setEnabledGroups((prev) => new Set(prev).add(group));
+    // Auto-enable all text variants when adding a model
+    setEnabledKinds(new Set(allKinds));
   }
 
   function enableAllGroups() {
     setEnabledGroups(new Set(allGroups));
+    // Auto-enable all text variants when enabling models
+    setEnabledKinds(new Set(allKinds));
   }
 
   function disableAllGroups() {
