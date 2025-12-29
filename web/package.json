@@ -8,6 +8,7 @@
     "preview": "python3 -m http.server 3000 --directory out"
   },
   "dependencies": {
+    "@libsql/client": "^0.15.15",
     "next": "^15.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"

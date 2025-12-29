@@ -193,3 +193,95 @@ td .latn {
 audio {
   width: 220px;
 }
+
+/* Rating buttons in header */
+.ratingButtons {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.ratingBtn {
+  width: 28px;
+  height: 24px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  transition: all 0.15s ease;
+}
+
+.ratingBtn:hover {
+  border-color: var(--accent);
+  color: var(--fg);
+}
+
+.ratingBtn.active.good {
+  background: #22c55e;
+  border-color: #22c55e;
+  color: white;
+}
+
+.ratingBtn.active.mediocre {
+  background: #eab308;
+  border-color: #eab308;
+  color: white;
+}
+
+.ratingBtn.active.broken {
+  background: #ef4444;
+  border-color: #ef4444;
+  color: white;
+}
+
+/* Header background based on rating */
+.th-good {
+  background: #f0fdf4 !important;
+}
+
+.th-mediocre {
+  background: #fefce8 !important;
+}
+
+.th-broken {
+  background: #fef2f2 !important;
+}
+
+/* Cell background colors based on column rating */
+.cellMediocre {
+  background: #fef9c3 !important;
+}
+
+.cellBroken {
+  background: #fee2e2 !important;
+}
+
+/* Cell-specific issue (overrides column color) */
+.cellIssue {
+  background: #fecaca !important;
+  position: relative;
+}
+
+.issueMarker {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  font-size: 12px;
+  color: #dc2626;
+}
+
+/* Make td position relative for issue marker */
+td {
+  position: relative;
+}
+
+/* Clickable cell indicator when ratings enabled */
+td:not(.missing):hover {
+  cursor: pointer;
+  box-shadow: inset 0 0 0 2px var(--accent);
+}

@@ -43,6 +43,11 @@ export default function Page() {
   const [groupToAdd, setGroupToAdd] = useState("");
   const [error, setError] = useState(null);
 
+  // Rating state
+  const [modelRatings, setModelRatings] = useState({});
+  const [cellIssues, setCellIssues] = useState(new Set());
+  const [ratingsEnabled, setRatingsEnabled] = useState(true);
+
   useEffect(() => {
     (async () => {
       try {
@@ -74,6 +79,23 @@ export default function Page() {
 
         setEnabledGroups(new Set(nextEnabledGroups));
         setEnabledKinds(new Set(nextEnabledKinds));
+
+        // Load ratings from API
+        if (process.env.NEXT_PUBLIC_RATINGS_ENABLED !== "false") {
+          try {
+            const ratingsRes = await fetch("/api/ratings");
+            if (ratingsRes.ok) {
+              const data = await ratingsRes.json();
+              setModelRatings(data.modelRatings || {});
+              setCellIssues(new Set(data.cellIssues || []));
+            }
+          } catch (err) {
+            console.warn("Ratings unavailable:", err);
+            setRatingsEnabled(false);
+          }
+        } else {
+          setRatingsEnabled(false);
+        }
       } catch (e) {
         setError(e instanceof Error ? e.message : String(e));
       }
@@ -172,6 +194,78 @@ export default function Page() {
       else next.add(kind);
       return next;
     });
+  }
+
+  // Rating helper functions
+  function getCellClassName(wordId, modelId) {
+    const cellKey = `${wordId}||${modelId}`;
+    if (cellIssues.has(cellKey)) return "cellIssue";
+    const rating = modelRatings[modelId];
+    if (rating === "mediocre") return "cellMediocre";
+    if (rating === "broken") return "cellBroken";
+    return "";
+  }
+
+  async function handleModelRating(modelId, rating) {
+    const currentRating = modelRatings[modelId];
+    const newRating = currentRating === rating ? null : rating;
+
+    // Optimistic update
+    setModelRatings((prev) => {
+      const next = { ...prev };
+      if (newRating) next[modelId] = newRating;
+      else delete next[modelId];
+      return next;
+    });
+
+    // Background sync
+    try {
+      await fetch("/api/ratings/model", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ modelId, rating: newRating })
+      });
+    } catch (err) {
+      console.error("Failed to save rating:", err);
+      // Revert on error
+      setModelRatings((prev) => {
+        const next = { ...prev };
+        if (currentRating) next[modelId] = currentRating;
+        else delete next[modelId];
+        return next;
+      });
+    }
+  }
+
+  async function handleCellIssue(wordId, modelId) {
+    const cellKey = `${wordId}||${modelId}`;
+    const hasIssue = cellIssues.has(cellKey);
+
+    // Optimistic update
+    setCellIssues((prev) => {
+      const next = new Set(prev);
+      if (hasIssue) next.delete(cellKey);
+      else next.add(cellKey);
+      return next;
+    });
+
+    // Background sync
+    try {
+      await fetch("/api/ratings/cell", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cellId: cellKey, hasIssue: !hasIssue })
+      });
+    } catch (err) {
+      console.error("Failed to save cell issue:", err);
+      // Revert on error
+      setCellIssues((prev) => {
+        const next = new Set(prev);
+        if (hasIssue) next.add(cellKey);
+        else next.delete(cellKey);
+        return next;
+      });
+    }
   }
 
   if (error) {
@@ -275,11 +369,36 @@ export default function Page() {
             <tr>
               <th style={{ minWidth: 240 }}>Word</th>
               {visibleModels.map((m) => (
-                <th key={m.id} style={{ minWidth: 240 }}>
+                <th key={m.id} style={{ minWidth: 240 }} className={modelRatings[m.id] ? `th-${modelRatings[m.id]}` : ""}>
                   <div style={{ fontWeight: 700, color: "var(--fg)" }}>{m.provider_label}</div>
                   <div>{m.engine_id}</div>
                   <div>{m.voice_id}</div>
                   <div style={{ color: "var(--accent)" }}>{m.input_kind}</div>
+                  {ratingsEnabled && (
+                    <div className="ratingButtons">
+                      <button
+                        className={`ratingBtn ${modelRatings[m.id] === "good" ? "active good" : ""}`}
+                        onClick={() => handleModelRating(m.id, "good")}
+                        title="Mark as Good"
+                      >
+                        ✓
+                      </button>
+                      <button
+                        className={`ratingBtn ${modelRatings[m.id] === "mediocre" ? "active mediocre" : ""}`}
+                        onClick={() => handleModelRating(m.id, "mediocre")}
+                        title="Mark as Mediocre"
+                      >
+                        ~
+                      </button>
+                      <button
+                        className={`ratingBtn ${modelRatings[m.id] === "broken" ? "active broken" : ""}`}
+                        onClick={() => handleModelRating(m.id, "broken")}
+                        title="Mark as Broken"
+                      >
+                        ✗
+                      </button>
+                    </div>
+                  )}
                 </th>
               ))}
             </tr>
@@ -296,23 +415,34 @@ export default function Page() {
                 </td>
                 {visibleModels.map((m) => {
                   const clip = clipsByKey.get(`${w.id}||${m.id}`);
+                  const cellClass = getCellClassName(w.id, m.id);
+                  const hasCellIssue = cellIssues.has(`${w.id}||${m.id}`);
                   if (!clip) {
                     const failure = failuresByKey.get(`${w.id}||${m.id}`);
                     if (failure) {
                       return (
-                        <td key={m.id} className="missing" title={`${failure.error_type}: ${failure.error}`}>
+                        <td key={m.id} className={`missing ${cellClass}`} title={`${failure.error_type}: ${failure.error}`}>
                           ERR: {failure.error_type}
                         </td>
                       );
                     }
                     return (
-                      <td key={m.id} className="missing">
+                      <td key={m.id} className={`missing ${cellClass}`}>
                         —
                       </td>
                     );
                   }
                   return (
-                    <td key={m.id}>
+                    <td
+                      key={m.id}
+                      className={cellClass}
+                      onClick={(e) => {
+                        if (e.target.tagName !== "AUDIO" && ratingsEnabled) {
+                          handleCellIssue(w.id, m.id);
+                        }
+                      }}
+                    >
+                      {hasCellIssue && <div className="issueMarker" title="This cell has an issue">⚠</div>}
                       <audio controls preload="none" src={clip.audio_path} />
                       <div className="latn" title={clip.text}>
                         {clip.text}
