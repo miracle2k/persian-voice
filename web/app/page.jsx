@@ -21,8 +21,16 @@ function getAudioUrl(audioPath) {
   return audioPath;
 }
 
+function getDataUrl(path) {
+  if (AUDIO_BASE_URL) {
+    return `${AUDIO_BASE_URL}/${path}`;
+  }
+  return path;
+}
+
 async function fetchJson(path) {
-  const res = await fetch(path, { cache: "no-store" });
+  const url = getDataUrl(path);
+  const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`Failed to fetch ${path}: ${res.status}`);
   return await res.json();
 }

@@ -23,7 +23,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Generated media (can get large; keep out of git by default)
+# Audio and data files (synced to S3 separately)
 web/public/audio/
 web/public/data/
 
