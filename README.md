@@ -236,12 +236,13 @@ CAMB.AI (provider id `cambai`):
 
 The web UI is deployed to Kubernetes at `tts-shootout.farsi.school`.
 
-### Syncing audio files to S3
+### Syncing to S3
 
-Audio files are stored in S3 and served separately from the static site. After generating new audio clips locally, sync them:
+Audio and data files are stored in S3 and served separately from the static site. After generating new audio clips locally, sync both:
 
 ```bash
 AWS_PROFILE=new aws s3 sync web/public/audio/ s3://persian-tts-shootout-audio/audio/
+AWS_PROFILE=new aws s3 sync web/public/data/ s3://persian-tts-shootout-audio/data/
 ```
 
 ### Deploying code changes
