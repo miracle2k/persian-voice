@@ -81,6 +81,7 @@ export default function Page() {
   const [autoPlayIndex, setAutoPlayIndex] = useState(0);
   const audioRefs = useRef({});
   const isAutoPlayingRef = useRef(false);
+  const isAutoPlayTriggeredRef = useRef(false);
 
   // Only enable ratings when we have confirmed database connection
   const ratingsEnabled = syncStatus === "connected";
@@ -348,8 +349,12 @@ export default function Page() {
     setAutoPlayIndex(0);
   }
 
-  // Handle manual play - stops auto-play
+  // Handle manual play - stops auto-play (but not if triggered by auto-play itself)
   function handleManualPlay() {
+    if (isAutoPlayTriggeredRef.current) {
+      isAutoPlayTriggeredRef.current = false;
+      return;
+    }
     if (isAutoPlayingRef.current) {
       stopAutoPlay();
     }
@@ -380,7 +385,10 @@ export default function Page() {
         }
       };
       audio.addEventListener("ended", handleEnded);
+      // Set flag so handleManualPlay knows this is auto-play, not user click
+      isAutoPlayTriggeredRef.current = true;
       audio.play().catch(() => {
+        isAutoPlayTriggeredRef.current = false;
         // Play failed, move to next
         if (isAutoPlayingRef.current) {
           setAutoPlayIndex((prev) => prev + 1);
