@@ -1,0 +1,15 @@
+# Dependencies
+node_modules
+
+# Build output
+out
+.next
+
+# Audio files (served from S3)
+public/audio
+
+# Development files
+.env.local
+.git
+.gitignore
+*.md

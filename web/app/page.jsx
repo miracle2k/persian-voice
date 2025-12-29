@@ -3,12 +3,22 @@
 import { createClient } from "@libsql/client/web";
 import { useEffect, useMemo, useRef, useState } from "react";
 
+// Audio base URL (for S3 or local)
+const AUDIO_BASE_URL = process.env.NEXT_PUBLIC_AUDIO_BASE_URL || "";
+
 // Create Turso client for browser-side access
 function getTursoClient() {
   const url = process.env.NEXT_PUBLIC_TURSO_DATABASE_URL;
   const authToken = process.env.NEXT_PUBLIC_TURSO_AUTH_TOKEN;
   if (!url || !authToken) return null;
   return createClient({ url, authToken });
+}
+
+function getAudioUrl(audioPath) {
+  if (AUDIO_BASE_URL) {
+    return `${AUDIO_BASE_URL}/${audioPath}`;
+  }
+  return audioPath;
 }
 
 async function fetchJson(path) {
@@ -487,7 +497,7 @@ export default function Page() {
                       }}
                     >
                       {hasCellIssue && <div className="issueMarker" title="This cell has an issue">⚠</div>}
-                      <audio controls preload="none" src={clip.audio_path} />
+                      <audio controls preload="none" src={getAudioUrl(clip.audio_path)} />
                       <div className="latn" title={clip.text}>
                         {clip.text}
                       </div>
