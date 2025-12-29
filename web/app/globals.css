@@ -193,11 +193,47 @@ audio {
   width: 220px;
 }
 
+/* Header actions row (play button + rating buttons) */
+.headerActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+/* Play all button */
+.playAllBtn {
+  width: 28px;
+  height: 24px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.playAllBtn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.playAllBtn.playing {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
 /* Rating buttons in header */
 .ratingButtons {
   display: flex;
   gap: 4px;
-  margin-top: 6px;
 }
 
 .ratingBtn {

@@ -76,6 +76,12 @@ export default function Page() {
   const [syncStatus, setSyncStatus] = useState("disconnected"); // "disconnected" | "connected" | "error"
   const tursoClientRef = useRef(null);
 
+  // Auto-play state
+  const [autoPlayModelId, setAutoPlayModelId] = useState(null);
+  const [autoPlayIndex, setAutoPlayIndex] = useState(0);
+  const audioRefs = useRef({});
+  const isAutoPlayingRef = useRef(false);
+
   // Only enable ratings when we have confirmed database connection
   const ratingsEnabled = syncStatus === "connected";
 
@@ -328,6 +334,64 @@ export default function Page() {
     }
   }
 
+  // Auto-play functions
+  function stopAutoPlay() {
+    isAutoPlayingRef.current = false;
+    setAutoPlayModelId(null);
+    setAutoPlayIndex(0);
+  }
+
+  function startAutoPlay(modelId) {
+    stopAutoPlay();
+    isAutoPlayingRef.current = true;
+    setAutoPlayModelId(modelId);
+    setAutoPlayIndex(0);
+  }
+
+  // Handle manual play - stops auto-play
+  function handleManualPlay() {
+    if (isAutoPlayingRef.current) {
+      stopAutoPlay();
+    }
+  }
+
+  // Effect to handle auto-play sequence
+  useEffect(() => {
+    if (!autoPlayModelId || !isAutoPlayingRef.current) return;
+
+    const clipsForModel = filteredWords
+      .map((w) => ({ wordId: w.id, clip: clipsByKey.get(`${w.id}||${autoPlayModelId}`) }))
+      .filter((item) => item.clip);
+
+    if (autoPlayIndex >= clipsForModel.length) {
+      stopAutoPlay();
+      return;
+    }
+
+    const currentItem = clipsForModel[autoPlayIndex];
+    const audioKey = `${currentItem.wordId}||${autoPlayModelId}`;
+    const audio = audioRefs.current[audioKey];
+
+    if (audio) {
+      const handleEnded = () => {
+        audio.removeEventListener("ended", handleEnded);
+        if (isAutoPlayingRef.current) {
+          setAutoPlayIndex((prev) => prev + 1);
+        }
+      };
+      audio.addEventListener("ended", handleEnded);
+      audio.play().catch(() => {
+        // Play failed, move to next
+        if (isAutoPlayingRef.current) {
+          setAutoPlayIndex((prev) => prev + 1);
+        }
+      });
+    } else {
+      // No audio element, skip to next
+      setAutoPlayIndex((prev) => prev + 1);
+    }
+  }, [autoPlayModelId, autoPlayIndex, filteredWords, clipsByKey]);
+
   if (error) {
     return (
       <div className="container">
@@ -436,31 +500,40 @@ export default function Page() {
                   <div>{m.engine_id}</div>
                   <div>{m.voice_id}</div>
                   <div style={{ color: "var(--accent)" }}>{m.input_kind}</div>
-                  {ratingsEnabled && (
-                    <div className="ratingButtons">
-                      <button
-                        className={`ratingBtn ${modelRatings[m.id] === "good" ? "active good" : ""}`}
-                        onClick={() => handleModelRating(m.id, "good")}
-                        title="Mark as Good"
-                      >
-                        ✓
-                      </button>
-                      <button
-                        className={`ratingBtn ${modelRatings[m.id] === "mediocre" ? "active mediocre" : ""}`}
-                        onClick={() => handleModelRating(m.id, "mediocre")}
-                        title="Mark as Mediocre"
-                      >
-                        ~
-                      </button>
-                      <button
-                        className={`ratingBtn ${modelRatings[m.id] === "broken" ? "active broken" : ""}`}
-                        onClick={() => handleModelRating(m.id, "broken")}
-                        title="Mark as Broken"
-                      >
-                        ✗
-                      </button>
-                    </div>
-                  )}
+                  <div className="headerActions">
+                    <button
+                      className={`playAllBtn ${autoPlayModelId === m.id ? "playing" : ""}`}
+                      onClick={() => autoPlayModelId === m.id ? stopAutoPlay() : startAutoPlay(m.id)}
+                      title={autoPlayModelId === m.id ? "Stop" : "Play all clips in this column"}
+                    >
+                      {autoPlayModelId === m.id ? "⏹" : "▶"}
+                    </button>
+                    {ratingsEnabled && (
+                      <div className="ratingButtons">
+                        <button
+                          className={`ratingBtn ${modelRatings[m.id] === "good" ? "active good" : ""}`}
+                          onClick={() => handleModelRating(m.id, "good")}
+                          title="Mark as Good"
+                        >
+                          ✓
+                        </button>
+                        <button
+                          className={`ratingBtn ${modelRatings[m.id] === "mediocre" ? "active mediocre" : ""}`}
+                          onClick={() => handleModelRating(m.id, "mediocre")}
+                          title="Mark as Mediocre"
+                        >
+                          ~
+                        </button>
+                        <button
+                          className={`ratingBtn ${modelRatings[m.id] === "broken" ? "active broken" : ""}`}
+                          onClick={() => handleModelRating(m.id, "broken")}
+                          title="Mark as Broken"
+                        >
+                          ✗
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </th>
               ))}
             </tr>
@@ -494,6 +567,7 @@ export default function Page() {
                       </td>
                     );
                   }
+                  const audioKey = `${w.id}||${m.id}`;
                   return (
                     <td
                       key={m.id}
@@ -505,7 +579,13 @@ export default function Page() {
                       }}
                     >
                       {hasCellIssue && <div className="issueMarker" title="This cell has an issue">⚠</div>}
-                      <audio controls preload="none" src={getAudioUrl(clip.audio_path)} />
+                      <audio
+                        controls
+                        preload="none"
+                        src={getAudioUrl(clip.audio_path)}
+                        ref={(el) => { audioRefs.current[audioKey] = el; }}
+                        onPlay={handleManualPlay}
+                      />
                       <div className="latn" title={clip.text}>
                         {clip.text}
                       </div>
