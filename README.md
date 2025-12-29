@@ -231,3 +231,30 @@ CAMB.AI (provider id `cambai`):
 - Implement `Provider` in `backend/persian_voice/providers/` (see `backend/persian_voice/providers/openai_tts.py`).
 - Register it in `backend/persian_voice/providers/registry.py`.
 - Re-run `python backend/scripts/render_audio.py --providers all`.
+
+## Deployment
+
+The web UI is deployed to Kubernetes at `tts-shootout.farsi.school`.
+
+### Syncing audio files to S3
+
+Audio files are stored in S3 and served separately from the static site. After generating new audio clips locally, sync them:
+
+```bash
+AWS_PROFILE=new aws s3 sync web/public/audio/ s3://persian-tts-shootout-audio/audio/
+```
+
+### Deploying code changes
+
+1. Push changes to `master` (changes in `web/` trigger the CI)
+2. GitHub Actions builds and pushes the Docker image to ECR
+3. Restart the deployment to pull the new image:
+
+```bash
+kubectl rollout restart deployment/persian-tts-shootout -n languagetool --context=k6.srvpl.de
+```
+
+### GitHub Secrets Required
+
+- `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY`: For pushing Docker images to ECR
+- `TURSO_DATABASE_URL` / `TURSO_AUTH_TOKEN`: For ratings database (baked into the static build)
