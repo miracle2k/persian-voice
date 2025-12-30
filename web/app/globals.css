@@ -310,26 +310,44 @@ audio {
 /* Cell-specific issue (overrides column color) */
 .cellIssue {
   background: #fecaca !important;
-  position: relative;
 }
 
-.issueMarker {
+/* Cell issue button */
+.cellIssueBtn {
   position: absolute;
   top: 4px;
   right: 4px;
-  font-size: 12px;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: #fff;
+  cursor: pointer;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  opacity: 0.5;
+  transition: all 0.15s ease;
+}
+
+.cellIssueBtn:hover {
+  opacity: 1;
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+.cellIssueBtn.active {
+  opacity: 1;
+  background: #fef2f2;
+  border-color: #ef4444;
   color: #dc2626;
 }
 
-/* Make td position relative for issue marker */
+/* Make td position relative for issue button */
 td {
   position: relative;
-}
-
-/* Clickable cell indicator when ratings enabled */
-td:not(.missing):hover {
-  cursor: pointer;
-  box-shadow: inset 0 0 0 2px var(--accent);
 }
 
 /* Sync status badge */

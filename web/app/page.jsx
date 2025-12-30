@@ -86,6 +86,7 @@ export default function Page() {
   const audioRefs = useRef({});
   const isAutoPlayingRef = useRef(false);
   const isAutoPlayTriggeredRef = useRef(false);
+  const currentlyPlayingRef = useRef(null);
 
   // Only enable ratings when we have confirmed database connection
   const ratingsEnabled = syncStatus === "connected";
@@ -380,12 +381,21 @@ export default function Page() {
     setAutoPlayIndex(0);
   }
 
-  // Handle manual play - stops auto-play (but not if triggered by auto-play itself)
-  function handleManualPlay() {
+  // Handle any audio play - stops other playing audio and auto-play
+  function handleAudioPlay(audioElement) {
+    // Stop any currently playing audio (unless it's the same element)
+    if (currentlyPlayingRef.current && currentlyPlayingRef.current !== audioElement) {
+      currentlyPlayingRef.current.pause();
+      currentlyPlayingRef.current.currentTime = 0;
+    }
+    currentlyPlayingRef.current = audioElement;
+
+    // If this is auto-play triggered, don't stop auto-play
     if (isAutoPlayTriggeredRef.current) {
       isAutoPlayTriggeredRef.current = false;
       return;
     }
+    // Manual play stops auto-play
     if (isAutoPlayingRef.current) {
       stopAutoPlay();
     }
@@ -623,22 +633,22 @@ export default function Page() {
                   }
                   const audioKey = `${w.id}||${m.id}`;
                   return (
-                    <td
-                      key={m.id}
-                      className={cellClass}
-                      onClick={(e) => {
-                        if (e.target.tagName !== "AUDIO" && ratingsEnabled) {
-                          handleCellIssue(w.id, m.id);
-                        }
-                      }}
-                    >
-                      {hasCellIssue && <div className="issueMarker" title="This cell has an issue">⚠</div>}
+                    <td key={m.id} className={cellClass}>
+                      {ratingsEnabled && (
+                        <button
+                          className={`cellIssueBtn ${hasCellIssue ? "active" : ""}`}
+                          onClick={() => handleCellIssue(w.id, m.id)}
+                          title={hasCellIssue ? "Remove issue marker" : "Mark as issue"}
+                        >
+                          {hasCellIssue ? "⚠" : "✗"}
+                        </button>
+                      )}
                       <audio
                         controls
                         preload="none"
                         src={getAudioUrl(clip.audio_path)}
                         ref={(el) => { audioRefs.current[audioKey] = el; }}
-                        onPlay={handleManualPlay}
+                        onPlay={(e) => handleAudioPlay(e.target)}
                       />
                       <div className="latn" title={clip.text}>
                         {clip.text}
