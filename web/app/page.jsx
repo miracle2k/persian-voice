@@ -634,15 +634,6 @@ export default function Page() {
                   const audioKey = `${w.id}||${m.id}`;
                   return (
                     <td key={m.id} className={cellClass}>
-                      {ratingsEnabled && (
-                        <button
-                          className={`cellIssueBtn ${hasCellIssue ? "active" : ""}`}
-                          onClick={() => handleCellIssue(w.id, m.id)}
-                          title={hasCellIssue ? "Remove issue marker" : "Mark as issue"}
-                        >
-                          {hasCellIssue ? "⚠" : "✗"}
-                        </button>
-                      )}
                       <audio
                         controls
                         preload="none"
@@ -650,8 +641,19 @@ export default function Page() {
                         ref={(el) => { audioRefs.current[audioKey] = el; }}
                         onPlay={(e) => handleAudioPlay(e.target)}
                       />
-                      <div className="latn" title={clip.text}>
-                        {clip.text}
+                      <div className="cellFooter">
+                        <div className="latn" title={clip.text}>
+                          {clip.text}
+                        </div>
+                        {ratingsEnabled && (
+                          <button
+                            className={`cellIssueBtn ${hasCellIssue ? "active" : ""}`}
+                            onClick={() => handleCellIssue(w.id, m.id)}
+                            title={hasCellIssue ? "Remove issue marker" : "Mark as issue"}
+                          >
+                            {hasCellIssue ? "⚠" : "✗"}
+                          </button>
+                        )}
                       </div>
                     </td>
                   );

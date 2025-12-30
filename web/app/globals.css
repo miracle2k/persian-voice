@@ -312,11 +312,22 @@ audio {
   background: #fecaca !important;
 }
 
+/* Cell footer row (text + issue button) */
+.cellFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cellFooter .latn {
+  flex: 1;
+  min-width: 0;
+}
+
 /* Cell issue button */
 .cellIssueBtn {
-  position: absolute;
-  top: 4px;
-  right: 4px;
+  flex-shrink: 0;
   width: 20px;
   height: 20px;
   border: 1px solid var(--border);
@@ -343,11 +354,6 @@ audio {
   background: #fef2f2;
   border-color: #ef4444;
   color: #dc2626;
-}
-
-/* Make td position relative for issue button */
-td {
-  position: relative;
 }
 
 /* Sync status badge */
